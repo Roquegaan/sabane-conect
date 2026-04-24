@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import './App.css';
 import Navbar from './components/Navbar';
 import { getAccessToken, fetchCursosInList } from './services/apiCursos';
@@ -80,18 +80,27 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [vista, setVista] = useState('inicio');
 
-  const handleIrAlEmpaquetador = async () => {
+  useEffect(() => {
+    if (vista === 'empaquetador') {
+      cargarCursos();
+    }
+  }, [vista]);
+
+  const cargarCursos = async () => {
     try {
       setLoading(true);
       const token = await getAccessToken();
       const data = await fetchCursosInList(token, ["000233", "000236"]);
       setCursos(data);
-      setVista('empaquetador');
     } catch (error) {
       alert("Error al conectar con la API");
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleIrAlEmpaquetador = () => {
+    setVista('empaquetador');
   };
 
   if (vista === 'inicio') {
@@ -138,28 +147,42 @@ function App() {
 
         <h2 style={{ color: '#003366', marginBottom: '30px' }}>Panel del Empaquetador</h2>
 
-        <table style={{ width: '100%', borderCollapse: 'collapse', backgroundColor: 'white', borderRadius: '8px', overflow: 'hidden', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}>
-          <thead style={{ backgroundColor: '#003366', color: 'white' }}>
-            <tr>
-              <th style={{ padding: '15px', textAlign: 'left' }}>ID SIGA</th>
-              <th style={{ padding: '15px', textAlign: 'left' }}>Nombre del Curso</th>
-              <th style={{ padding: '15px', textAlign: 'center' }}>Créditos</th>
-              <th style={{ padding: '15px', textAlign: 'center' }}>Estado</th>
-            </tr>
-          </thead>
-          <tbody>
-            {cursos.map((curso) => (
-              <tr key={curso.idCursoSiga} style={{ borderBottom: '1px solid #eee' }}>
-                <td style={{ padding: '15px' }}>{curso.idCursoSiga}</td>
-                <td style={{ padding: '15px', fontWeight: '500' }}>{curso.nombreCurso}</td>
-                <td style={{ padding: '15px', textAlign: 'center' }}>{curso.creditos}</td>
-                <td style={{ padding: '15px', textAlign: 'center' }}>
-                  <span style={{ color: 'green', fontWeight: 'bold' }}>● Activo</span>
-                </td>
+        {loading ? (
+          <div style={{ textAlign: 'center', padding: '40px', color: '#666' }}>
+            Cargando cursos...
+          </div>
+        ) : (
+          <table style={{ width: '100%', borderCollapse: 'collapse', backgroundColor: 'white', borderRadius: '8px', overflow: 'hidden', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}>
+            <thead style={{ backgroundColor: '#003366', color: 'white' }}>
+              <tr>
+                <th style={{ padding: '15px', textAlign: 'left' }}>ID SIGA</th>
+                <th style={{ padding: '15px', textAlign: 'left' }}>Nombre del Curso</th>
+                <th style={{ padding: '15px', textAlign: 'center' }}>Créditos</th>
+                <th style={{ padding: '15px', textAlign: 'center' }}>Estado</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {cursos.length === 0 ? (
+                <tr>
+                  <td colSpan="4" style={{ padding: '40px', textAlign: 'center', color: '#666' }}>
+                    No hay cursos disponibles
+                  </td>
+                </tr>
+              ) : (
+                cursos.map((curso) => (
+                  <tr key={curso.idCursoSiga} style={{ borderBottom: '1px solid #eee' }}>
+                    <td style={{ padding: '15px' }}>{curso.idCursoSiga}</td>
+                    <td style={{ padding: '15px', fontWeight: '500' }}>{curso.nombreCurso}</td>
+                    <td style={{ padding: '15px', textAlign: 'center' }}>{curso.creditos}</td>
+                    <td style={{ padding: '15px', textAlign: 'center' }}>
+                      <span style={{ color: 'green', fontWeight: 'bold' }}>● Activo</span>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        )}
       </div>
     </div>
   );
