@@ -1,14 +1,15 @@
 // src/components/ModuloCard.jsx
-function ModuloCard({ icono, titulo, descripcion, textoBoton, esAlerta }) {
+function ModuloCard({ icono, titulo, descripcion, textoBoton, esAlerta, onclick, loading, disabled }) {
     const estiloBoton = {
         backgroundColor: esAlerta ? 'transparent' : '#003366',
         color: esAlerta ? '#cc0000' : 'white',
         border: esAlerta ? '1px solid #cc0000' : 'none',
         padding: '10px 20px',
         borderRadius: '8px',
-        cursor: 'pointer',
+        cursor: disabled ? 'not-allowed' : 'pointer',
         width: '100%',
-        marginTop: 'auto'
+        marginTop: 'auto',
+        fontWeight: '500'
     };
 
     return (
@@ -27,7 +28,9 @@ function ModuloCard({ icono, titulo, descripcion, textoBoton, esAlerta }) {
             <p style={{ color: '#666', fontSize: '14px', lineHeight: '1.5', marginBottom: '24px' }}>
                 {descripcion}
             </p>
-            <button style={estiloBoton}>{textoBoton}</button>
+            <button style={estiloBoton} onClick={onclick} disabled={disabled}>
+                {loading ? "Cargando..." : textoBoton}
+            </button>
         </div>
     );
 }
