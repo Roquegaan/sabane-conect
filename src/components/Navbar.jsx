@@ -1,8 +1,11 @@
 // src/components/Navbar.jsx
-import React from 'react';
+import React, { useState } from 'react';
 import '../styles/Navbar.scss';
+import UserCard from './UserCard';
 
 function Navbar() {
+    const [showUserCard, setShowUserCard] = useState(false);
+
     return (
         <nav className="navbar">
             {/* Lado Izquierdo: Logo y Nombre */}
@@ -23,9 +26,10 @@ function Navbar() {
                     usuario
                 </div>
                 {/* Avatar Circular */}
-                <div className="avatar">
+                <div className="avatar" onClick={() => setShowUserCard(!showUserCard)}>
                     RG
                 </div>
+                {showUserCard && <UserCard onClose={() => setShowUserCard(false)} />}
             </div>
         </nav>
     );

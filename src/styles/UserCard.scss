@@ -1,0 +1,63 @@
+@import './variables.scss';
+
+.user-card {
+    position: absolute;
+    top: 100%; // Justo debajo del avatar
+    right: 0;
+    background-color: $white;
+    border-radius: 8px;
+    padding: 16px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 1000; // Alto z-index para flotar sobre otros elementos
+    width: 200px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    border: 1px solid $light-gray;
+
+    .user-card-avatar {
+        width: 40px;
+        height: 40px;
+        background-color: $primary-color;
+        color: $white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 14px;
+    }
+
+    .user-card-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: $dark-gray;
+        margin: 0;
+        text-align: center;
+    }
+
+    .user-card-text {
+        font-size: 14px;
+        color: $text-gray;
+        margin: 0;
+        text-align: center;
+    }
+
+    .user-card-logout {
+        padding: 8px 16px;
+        border-radius: 6px;
+        background-color: $alert-red;
+        color: $white;
+        border: none;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 500;
+        width: 100%;
+        transition: opacity 0.2s;
+
+        &:hover {
+            opacity: 0.9;
+        }
+    }
+}

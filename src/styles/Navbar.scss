@@ -32,6 +32,7 @@
         align-items: center;
         gap: 15px;
         text-align: right;
+        position: relative;
 
         .user-info {
             font-size: 14px;
@@ -48,6 +49,7 @@
             align-items: center;
             justify-content: center;
             font-weight: bold;
+            cursor: pointer;
         }
     }
 }
