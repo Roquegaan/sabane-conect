@@ -41,7 +41,7 @@ function App() {
     setVista('empaquetador');
   };
 
-  // Función para descargar como JSON
+  //////////////////////
   const descargarJSON = () => {
     const json = JSON.stringify(cursos, null, 2);
     const blob = new Blob([json], { type: 'application/json' });
@@ -55,7 +55,7 @@ function App() {
     URL.revokeObjectURL(url);
   };
 
-  // Función para descargar como CSV
+  //////////////////////////////////
   const descargarCSV = () => {
     // Encabezados
     const headers = ['ID SIGA', 'Nombre', 'Departamento', 'Créditos'];
