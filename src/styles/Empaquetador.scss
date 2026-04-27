@@ -1,0 +1,99 @@
+@import './variables.scss';
+
+.empaquetador {
+    padding: 40px 80px;
+
+    .volver-boton {
+        margin-bottom: 20px;
+        cursor: pointer;
+        border: none;
+        background: none;
+        color: $primary-color;
+        font-weight: bold;
+    }
+
+    .titulo {
+        color: $primary-color;
+        margin-bottom: 10px;
+    }
+
+    .descripcion {
+        margin-bottom: 30px;
+        color: $text-gray;
+    }
+
+    .botones-descarga {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 30px;
+
+        .boton-descarga {
+            padding: 10px 16px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+
+            &.json {
+                background-color: $primary-color;
+                color: $white;
+            }
+
+            &.csv {
+                background-color: $success-green;
+                color: $white;
+            }
+
+            &:disabled {
+                cursor: not-allowed;
+                opacity: 0.5;
+            }
+        }
+    }
+
+    .cargando {
+        text-align: center;
+        padding: 40px;
+        color: $text-gray;
+    }
+
+    .tabla {
+        width: 100%;
+        border-collapse: collapse;
+        background-color: $white;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+
+        thead {
+            background-color: $primary-color;
+            color: $white;
+
+            th {
+                padding: 15px;
+                text-align: left;
+
+                &:nth-child(4),
+                &:nth-child(5) {
+                    text-align: center;
+                }
+            }
+        }
+
+        tbody {
+            tr {
+                border-bottom: 1px solid #eee;
+
+                td {
+                    padding: 15px;
+
+                    &:nth-child(4),
+                    &:nth-child(5) {
+                        text-align: center;
+                    }
+                }
+            }
+        }
+    }
+}

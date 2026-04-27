@@ -1,0 +1,78 @@
+@import './variables.scss';
+
+.modulo-card {
+    background-color: $white;
+    border-radius: 12px;
+    padding: 32px;
+    width: 420px;
+    box-shadow: 0 2px 12px $shadow;
+    border: 1px solid $light-gray;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+
+    .icono {
+        width: 52px;
+        height: 52px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+
+        &.normal {
+            background-color: $primary-color;
+        }
+
+        &.alerta {
+            background-color: $alert-yellow;
+        }
+    }
+
+    .titulo {
+        font-size: 18px;
+        font-weight: 700;
+        color: $dark-gray;
+        margin: 0;
+        font-family: system-ui, sans-serif;
+    }
+
+    .descripcion {
+        font-size: 14px;
+        color: $text-gray;
+        line-height: 1.6;
+        margin: 0;
+        flex-grow: 1;
+    }
+
+    .boton {
+        margin-top: 8px;
+        padding: 14px 20px;
+        border-radius: 8px;
+        font-size: 15px;
+        font-weight: 600;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        transition: opacity 0.2s;
+
+        &.normal {
+            background-color: $primary-color;
+            color: $white;
+            border: none;
+        }
+
+        &.alerta {
+            background-color: transparent;
+            color: $alert-red;
+            border: 1.5px solid $alert-red;
+        }
+
+        &:disabled {
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+    }
+}

@@ -1,0 +1,28 @@
+@import './variables.scss';
+
+.inicio {
+    padding: 60px 60px;
+    display: flex;
+    flex-direction: column;
+    gap: 50px;
+
+    header {
+        .saludo {
+            font-size: 48px;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+
+        .bienvenida {
+            color: #666;
+            font-size: 20px;
+            margin: 8px 0 0 0;
+        }
+    }
+
+    main {
+        display: flex;
+        gap: 32px;
+        flex-wrap: wrap;
+    }
+}

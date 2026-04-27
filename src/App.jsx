@@ -1,79 +1,10 @@
 import { useState, useEffect } from 'react';
 import './App.css';
 import Navbar from './components/Navbar';
+import ModuloCard from './components/ModuloCard';
 import { getAccessToken, fetchCursosInList } from './services/apiCursos';
-
-function ModuloCard({ titulo, descripcion, textoBoton, onclick, disabled, loading, esAlerta }) {
-  return (
-    <div style={{
-      backgroundColor: 'white',
-      borderRadius: '12px',
-      padding: '32px',
-      width: '420px',
-      boxShadow: '0 2px 12px rgba(0,0,0,0.08)',
-      border: '1px solid #e8e8e8',
-      display: 'flex',
-      flexDirection: 'column',
-      gap: '16px',
-    }}>
-      <div style={{
-        width: '52px',
-        height: '52px',
-        borderRadius: '12px',
-        backgroundColor: esAlerta ? '#FEF3C7' : '#1B3A6B',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-      }}>
-        {esAlerta ? (
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-            <path d="M12 2L1 21h22L12 2z" fill="#F59E0B" stroke="#F59E0B" strokeWidth="1" />
-            <path d="M12 9v5" stroke="white" strokeWidth="2" strokeLinecap="round" />
-            <circle cx="12" cy="17" r="1" fill="white" />
-          </svg>
-        ) : (
-          <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
-            <path d="M12 2L2 7l10 5 10-5-10-5z" fill="white" opacity="0.9" />
-            <path d="M2 7v10l10 5V12L2 7z" fill="white" opacity="0.6" />
-            <path d="M22 7v10l-10 5V12l10-5z" fill="white" opacity="0.8" />
-          </svg>
-        )}
-      </div>
-
-      <h2 style={{ fontSize: '18px', fontWeight: '700', color: '#111827', margin: 0 }}>
-        {titulo}
-      </h2>
-
-      <p style={{ fontSize: '14px', color: '#6B7280', lineHeight: '1.6', margin: 0, flexGrow: 1 }}>
-        {descripcion}
-      </p>
-
-      <button
-        onClick={onclick}
-        disabled={disabled}
-        style={{
-          marginTop: '8px',
-          padding: '14px 20px',
-          borderRadius: '8px',
-          fontSize: '15px',
-          fontWeight: '600',
-          cursor: disabled ? 'not-allowed' : 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: '8px',
-          transition: 'opacity 0.2s',
-          opacity: disabled ? 0.7 : 1,
-          backgroundColor: esAlerta ? 'transparent' : '#1B3A6B',
-          color: esAlerta ? '#DC2626' : 'white',
-          border: esAlerta ? '1.5px solid #DC2626' : 'none',
-        }}
-      >
-        {loading ? 'Cargando...' : textoBoton} →
-      </button>
-    </div>
-  );
-}
+import './styles/Inicio.scss';
+import './styles/Empaquetador.scss';
 
 function App() {
   const [cursos, setCursos] = useState([]);
@@ -90,10 +21,17 @@ function App() {
     try {
       setLoading(true);
       const token = await getAccessToken();
-      const data = await fetchCursosInList(token, ["000233", "000236"]);
-      setCursos(data);
+
+      // IDs que SI están en tu archivo response.json
+      const ids = ["675851", "675852", "675908"];
+      // fetchCursosInList devuelve directamente un ARRAY (ya convierte con Object.values)
+      const listaArray = await fetchCursosInList(token, ids);
+
+      // No necesitamos verificar .data porque ya es un array
+      setCursos(listaArray);
     } catch (error) {
-      alert("Error al conectar con la API");
+      console.error('Error cargando cursos:', error);
+      alert('Error de conexión');
     } finally {
       setLoading(false);
     }
@@ -103,17 +41,61 @@ function App() {
     setVista('empaquetador');
   };
 
+  // Función para descargar como JSON
+  const descargarJSON = () => {
+    const json = JSON.stringify(cursos, null, 2);
+    const blob = new Blob([json], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'cursos_empaquetados.json';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
+  // Función para descargar como CSV
+  const descargarCSV = () => {
+    // Encabezados
+    const headers = ['ID SIGA', 'Nombre', 'Departamento', 'Créditos'];
+
+    // Convertir cursos a filas CSV
+    const rows = cursos.map(curso => [
+      curso.idCursoSiga,
+      `"${curso.nombreCurso}"`, // Envuelto en comillas por si tiene comas
+      `"${curso.departamento?.nombre || 'N/A'}"`,
+      curso.creditos
+    ]);
+
+    // Combinar encabezados y filas
+    const csvContent = [
+      headers.join(','),
+      ...rows.map(row => row.join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'cursos_empaquetados.csv';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
   if (vista === 'inicio') {
     return (
       <div className="app-container" style={{ padding: 0 }}>
         <Navbar />
-        <div style={{ padding: '60px 60px', display: 'flex', flexDirection: 'column', gap: '50px' }}>
+        <div className="inicio">
           <header>
-            <h1 style={{ fontSize: '48px', fontWeight: 'bold', margin: 20 }}>¡Hola, Roque!</h1>
-            <p style={{ color: '#666', fontSize: '20px', margin: '8px 0 0 0' }}>Bienvenido a SABANA CONNECT</p>
+            <h1 className="saludo">¡Hola, Roque!</h1>
+            <p className="bienvenida">Bienvenido a SABANA CONNECT</p>
           </header>
 
-          <main style={{ display: 'flex', gap: '32px', flexWrap: 'wrap' }}>
+          <main>
             <ModuloCard
               titulo="Empaquetador de Cursos - API SOC"
               descripcion="Gestiona y empaqueta cursos universitarios de forma eficiente. Selecciona múltiples cursos, visualiza sus detalles y genera paquetes descargables con un solo clic."
@@ -137,49 +119,60 @@ function App() {
   return (
     <div className="app-container" style={{ padding: 0 }}>
       <Navbar />
-      <div style={{ padding: '40px 80px' }}>
+      <div className="empaquetador">
         <button
           onClick={() => setVista('inicio')}
-          style={{ marginBottom: '20px', cursor: 'pointer', border: 'none', background: 'none', color: '#003366', fontWeight: 'bold' }}
+          className="volver-boton"
         >
           ← Volver al inicio
         </button>
 
-        <h2 style={{ color: '#003366', marginBottom: '30px' }}>Panel del Empaquetador</h2>
+        <h2 className="titulo">Panel del Empaquetador</h2>
+        <p className="descripcion">Mostrando resultados de la API de Cursos.</p>
+
+        {/* Botones de descarga */}
+        <div className="botones-descarga">
+          <button
+            onClick={descargarJSON}
+            disabled={cursos.length === 0}
+            className="boton-descarga json"
+          >
+            ↓ Descargar JSON
+          </button>
+          <button
+            onClick={descargarCSV}
+            disabled={cursos.length === 0}
+            className="boton-descarga csv"
+          >
+            ↓ Descargar CSV
+          </button>
+        </div>
 
         {loading ? (
-          <div style={{ textAlign: 'center', padding: '40px', color: '#666' }}>
+          <div className="cargando">
             Cargando cursos...
           </div>
         ) : (
-          <table style={{ width: '100%', borderCollapse: 'collapse', backgroundColor: 'white', borderRadius: '8px', overflow: 'hidden', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}>
-            <thead style={{ backgroundColor: '#003366', color: 'white' }}>
+          <table className="tabla">
+            <thead>
               <tr>
-                <th style={{ padding: '15px', textAlign: 'left' }}>ID SIGA</th>
-                <th style={{ padding: '15px', textAlign: 'left' }}>Nombre del Curso</th>
-                <th style={{ padding: '15px', textAlign: 'center' }}>Créditos</th>
-                <th style={{ padding: '15px', textAlign: 'center' }}>Estado</th>
+                <th>ID SIGA</th>
+                <th>Nombre del Curso</th>
+                <th>Departamento</th>
+                <th>Créditos</th>
+                <th>Modalidad</th>
               </tr>
             </thead>
             <tbody>
-              {cursos.length === 0 ? (
-                <tr>
-                  <td colSpan="4" style={{ padding: '40px', textAlign: 'center', color: '#666' }}>
-                    No hay cursos disponibles
-                  </td>
+              {cursos.map((curso) => (
+                <tr key={curso.idCursoSiga}>
+                  <td>{curso.idCursoSiga}</td>
+                  <td>{curso.nombreCurso}</td>
+                  <td>{curso.departamento?.nombre}</td>
+                  <td>{curso.creditos}</td>
+                  <td>{curso.modalidad}</td>
                 </tr>
-              ) : (
-                cursos.map((curso) => (
-                  <tr key={curso.idCursoSiga} style={{ borderBottom: '1px solid #eee' }}>
-                    <td style={{ padding: '15px' }}>{curso.idCursoSiga}</td>
-                    <td style={{ padding: '15px', fontWeight: '500' }}>{curso.nombreCurso}</td>
-                    <td style={{ padding: '15px', textAlign: 'center' }}>{curso.creditos}</td>
-                    <td style={{ padding: '15px', textAlign: 'center' }}>
-                      <span style={{ color: 'green', fontWeight: 'bold' }}>● Activo</span>
-                    </td>
-                  </tr>
-                ))
-              )}
+              ))}
             </tbody>
           </table>
         )}
