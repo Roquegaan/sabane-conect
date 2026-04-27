@@ -5,11 +5,13 @@ import ModuloCard from './components/ModuloCard';
 import { getAccessToken, fetchCursosInList } from './services/apiCursos';
 import './styles/Inicio.scss';
 import './styles/Empaquetador.scss';
+import './styles/Modal.scss';
 
 function App() {
   const [cursos, setCursos] = useState([]);
   const [loading, setLoading] = useState(false);
   const [vista, setVista] = useState('inicio');
+  const [selectedCurso, setSelectedCurso] = useState(null);
 
   useEffect(() => {
     if (vista === 'empaquetador') {
@@ -161,6 +163,7 @@ function App() {
                 <th>Departamento</th>
                 <th>Créditos</th>
                 <th>Modalidad</th>
+                <th>Acciones</th>
               </tr>
             </thead>
             <tbody>
@@ -171,10 +174,29 @@ function App() {
                   <td>{curso.departamento?.nombre}</td>
                   <td>{curso.creditos}</td>
                   <td>{curso.modalidad}</td>
+                  <td>
+                    <button onClick={() => setSelectedCurso(curso)}>Ver Descripción</button>
+                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
+        )}
+
+        {selectedCurso && (
+          <div className="modal-overlay" onClick={() => setSelectedCurso(null)}>
+            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+              <h2>{selectedCurso.nombreCurso}</h2>
+              <p>{selectedCurso.descripcion}</p>
+              <div className="detalles-tecnicos">
+                <h3>Detalles Técnicos</h3>
+                <p>Nivel de Formación: {selectedCurso.nivelFormacion}</p>
+                <p>Idioma: {selectedCurso.idioma}</p>
+                <p>Total de Horas: {selectedCurso.totalHoras}</p>
+              </div>
+              <button onClick={() => setSelectedCurso(null)}>Cerrar</button>
+            </div>
+          </div>
         )}
       </div>
     </div>
