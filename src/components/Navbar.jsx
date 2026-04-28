@@ -20,17 +20,10 @@ function Navbar({ onSearch, onClearSearch, showSearch }) {
 
     return (
         <nav className="navbar">
-            {/* Lado Izquierdo: Logo y Nombre */}
-            <div className="logo-section">
-                <img
-                    src="/unisabana-logo.png" // Asegúrate de tener el logo en la carpeta public
-                    alt="Logo"
-                    className="logo"
-                />
-                <span className="titulo">
-                    SABANA CONNECT
-                </span>
-            </div>
+            {/* Lado Izquierdo: Nombre */}
+            <span className="titulo">
+                SABANA CONNECT
+            </span>
 
             {showSearch && (
                 <div className="search-section">
