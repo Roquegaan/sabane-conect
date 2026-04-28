@@ -3,8 +3,20 @@ import React, { useState } from 'react';
 import '../styles/Navbar.scss';
 import UserCard from './UserCard';
 
-function Navbar() {
+function Navbar({ onSearch, onClearSearch, showSearch }) {
     const [showUserCard, setShowUserCard] = useState(false);
+    const [searchValue, setSearchValue] = useState('');
+
+    const handleKeyDown = (event) => {
+        if (event.key === 'Enter') {
+            onSearch(searchValue.trim());
+        }
+    };
+
+    const handleClear = () => {
+        setSearchValue('');
+        onClearSearch();
+    };
 
     return (
         <nav className="navbar">
@@ -19,6 +31,29 @@ function Navbar() {
                     SABANA CONNECT
                 </span>
             </div>
+
+            {showSearch && (
+                <div className="search-section">
+                    <input
+                        type="text"
+                        value={searchValue}
+                        onChange={(e) => setSearchValue(e.target.value)}
+                        onKeyDown={handleKeyDown}
+                        placeholder="Buscar ID SIGA..."
+                        className="search-input"
+                    />
+                    {searchValue && (
+                        <button
+                            type="button"
+                            className="clear-search"
+                            onClick={handleClear}
+                            aria-label="Limpiar búsqueda"
+                        >
+                            ×
+                        </button>
+                    )}
+                </div>
+            )}
 
             {/* Lado Derecho: Info del Usuario */}
             <div className="user-section">

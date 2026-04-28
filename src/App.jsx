@@ -9,6 +9,7 @@ import './styles/Modal.scss';
 
 function App() {
   const [cursos, setCursos] = useState([]);
+  const [fullCursos, setFullCursos] = useState([]);
   const [loading, setLoading] = useState(false);
   const [vista, setVista] = useState('inicio');
   const [selectedCurso, setSelectedCurso] = useState(null);
@@ -31,6 +32,7 @@ function App() {
 
       // No necesitamos verificar .data porque ya es un array
       setCursos(listaArray);
+      setFullCursos(listaArray);
     } catch (error) {
       console.error('Error cargando cursos:', error);
       alert('Error de conexión');
@@ -41,6 +43,33 @@ function App() {
 
   const handleIrAlEmpaquetador = () => {
     setVista('empaquetador');
+  };
+
+  const buscarCursoPorId = async (idIngresado) => {
+    if (!/^[0-9]+$/.test(idIngresado)) {
+      alert('Por favor, ingresa un ID SIGA válido para buscar');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const token = await getAccessToken();
+      const resultado = await fetchCursosInList(token, [idIngresado]);
+      setCursos(resultado);
+    } catch (error) {
+      console.error('Error buscando curso por ID:', error);
+      alert('Error de conexión');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const limpiarBusqueda = () => {
+    if (fullCursos.length > 0) {
+      setCursos(fullCursos);
+    } else {
+      cargarCursos();
+    }
   };
 
   //////////////////////
@@ -90,7 +119,11 @@ function App() {
   if (vista === 'inicio') {
     return (
       <div className="app-container" style={{ padding: 0 }}>
-        <Navbar />
+        <Navbar
+          onSearch={buscarCursoPorId}
+          onClearSearch={limpiarBusqueda}
+          showSearch={false}
+        />
         <div className="inicio">
           <header>
             <h1 className="saludo">¡Hola, Roque!</h1>
@@ -120,7 +153,11 @@ function App() {
 
   return (
     <div className="app-container" style={{ padding: 0 }}>
-      <Navbar />
+      <Navbar
+        onSearch={buscarCursoPorId}
+        onClearSearch={limpiarBusqueda}
+        showSearch={true}
+      />
       <div className="empaquetador">
         <button
           onClick={() => setVista('inicio')}
