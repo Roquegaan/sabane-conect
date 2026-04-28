@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import './App.css';
 import Navbar from './components/Navbar';
 import ModuloCard from './components/ModuloCard';
+import RegistroErrores from './components/RegistroErrores';
 import { getAccessToken, fetchCursosInList } from './services/apiCursos';
 import './styles/Inicio.scss';
 import './styles/Empaquetador.scss';
@@ -13,6 +14,7 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [vista, setVista] = useState('inicio');
   const [selectedCurso, setSelectedCurso] = useState(null);
+  const [historialErrores, setHistorialErrores] = useState([]);
 
   useEffect(() => {
     if (vista === 'empaquetador') {
@@ -35,14 +37,55 @@ function App() {
       setFullCursos(listaArray);
     } catch (error) {
       console.error('Error cargando cursos:', error);
+      registrarError(null, error, 'cargarCursos');
       alert('Error de conexión');
     } finally {
       setLoading(false);
     }
   };
 
+  const registrarError = (idCurso, error, operacion) => {
+    const ahora = new Date();
+    const fecha = ahora.toLocaleString('es-ES', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit'
+    }).replace(/\//g, '-');
+
+    const statusCode = error?.response?.status || 'ERR';
+    const errorMessage = error?.response?.data?.message || error?.message || 'Error desconocido';
+
+    const nuevoError = {
+      id: historialErrores.length + 1,
+      fecha,
+      codigo: `ERR-${operacion.toUpperCase()}-${statusCode}`,
+      descripcion: errorMessage,
+      idCurso: idCurso || 'N/A',
+      estado: 'Crítico',
+      statusCode,
+      operacion,
+      timestamp: ahora.getTime(),
+      logs: [
+        `${fecha} - operación iniciada: ${operacion}`,
+        `${fecha} - error capturado en cliente`,
+        `${fecha} - código de estado: ${statusCode}`,
+        `${fecha} - mensaje: ${errorMessage}`,
+        `${fecha} - investigación de causa técnica iniciada`
+      ]
+    };
+
+    setHistorialErrores((prev) => [nuevoError, ...prev]);
+  };
+
   const handleIrAlEmpaquetador = () => {
     setVista('empaquetador');
+  };
+
+  const handleIrARegistroErrores = () => {
+    setVista('errores');
   };
 
   const buscarCursoPorId = async (idIngresado) => {
@@ -58,6 +101,7 @@ function App() {
       setCursos(resultado);
     } catch (error) {
       console.error('Error buscando curso por ID:', error);
+      registrarError(idIngresado, error, 'buscar');
       alert('Error de conexión');
     } finally {
       setLoading(false);
@@ -144,9 +188,19 @@ function App() {
               descripcion="Visualiza las causas técnicas de fallos en el empaquetado. Consulta el historial de errores, logs del servidor y soluciones sugeridas para cada incidencia."
               textoBoton="Ver Registro de Errores"
               esAlerta={true}
+              onclick={handleIrARegistroErrores}
             />
           </main>
         </div>
+      </div>
+    );
+  }
+
+  if (vista === 'errores') {
+    return (
+      <div className="app-container" style={{ padding: 0 }}>
+        <Navbar onSearch={buscarCursoPorId} onClearSearch={limpiarBusqueda} showSearch={false} />
+        <RegistroErrores onBack={() => setVista('inicio')} historialErrores={historialErrores} />
       </div>
     );
   }

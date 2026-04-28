@@ -12,6 +12,17 @@ export const getAccessToken = async () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(credentials)
     });
+    
+    if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        const error = new Error(errorData.message || 'Error al obtener token');
+        error.response = {
+            status: response.status,
+            data: errorData
+        };
+        throw error;
+    }
+    
     const data = await response.json();
     return data.access_token;
 };
@@ -26,6 +37,17 @@ export const fetchCursosInList = async (token, idsCursos = ["000233", "000236"])
         },
         body: JSON.stringify({ id_curso: idsCursos })
     });
+    
+    if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        const error = new Error(errorData.message || 'Error en la solicitud');
+        error.response = {
+            status: response.status,
+            data: errorData
+        };
+        throw error;
+    }
+    
     const result = await response.json();
     return Object.values(result.data || {});
 };
