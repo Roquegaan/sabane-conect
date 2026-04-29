@@ -52,6 +52,257 @@
         }
     }
 
+    .table-controls {
+        position: relative;
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 20px;
+
+        .filtros-btn,
+        .search-container {
+            margin: 0;
+        }
+
+        .filtros-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 14px;
+            background-color: #eff4fb;
+            border: 1px solid #cbd7e8;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            color: $dark-gray;
+            transition: background-color 0.2s ease;
+
+            &:hover {
+                background-color: #e6eef8;
+            }
+
+            .badge {
+                background-color: #0f62ff;
+                color: $white;
+                border-radius: 50%;
+                padding: 4px 8px;
+                font-size: 12px;
+                font-weight: 700;
+                min-width: 20px;
+                text-align: center;
+            }
+
+            .arrow {
+                font-size: 12px;
+                transition: transform 0.2s ease;
+            }
+
+            &.open .arrow,
+            .arrow.open {
+                transform: rotate(180deg);
+            }
+
+            justify-content: center;
+        }
+    }
+
+    .search-container {
+        position: relative;
+        display: flex;
+        align-items: center;
+
+        .search-input {
+            padding: 10px 42px 10px 14px;
+            border: 1px solid #d6dde8;
+            border-radius: 14px;
+            font-size: 14px;
+            width: 280px;
+            background-color: #ffffff;
+
+            &:focus {
+                outline: none;
+                box-shadow: 0 0 0 4px rgba(0, 86, 179, 0.08);
+                border-color: #5d8bf4;
+            }
+        }
+
+        .search-icon {
+            position: absolute;
+            right: 12px;
+            color: $text-gray;
+            font-size: 16px;
+        }
+
+        .clear-search {
+            position: absolute;
+            right: 36px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: $text-gray;
+            font-size: 16px;
+            padding: 0;
+
+            &:hover {
+                color: #4b5563;
+            }
+        }
+    }
+
+    .filtros-dropdown {
+        position: absolute;
+        top: calc(100% + 12px);
+        right: 0;
+        width: 360px;
+        background-color: $white;
+        border: 1px solid #d8e2ee;
+        border-radius: 18px;
+        box-shadow: 0 24px 48px rgba(15, 23, 42, 0.12);
+        padding: 18px;
+        z-index: 30;
+    }
+
+    .dropdown-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 16px;
+
+        .dropdown-back {
+            border: none;
+            background: #f1f5fb;
+            color: $dark-gray;
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+
+
+            .dropdown-title {
+                font-weight: 700;
+                font-size: 14px;
+                color: $dark-gray;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                max-width: 240px;
+            }
+        }
+
+        .dropdown-search-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 14px;
+
+            .dropdown-search-input {
+                flex: 1;
+                padding: 10px 14px;
+                border: 1px solid #d6dde8;
+                border-radius: 12px;
+                background: #f8fbff;
+                color: $dark-gray;
+                font-size: 14px;
+
+                &:focus {
+                    outline: none;
+                    border-color: #6b8cf5;
+                    box-shadow: 0 0 0 4px rgba(94, 120, 255, 0.12);
+                }
+            }
+
+            .dropdown-clear-btn {
+                padding: 10px 14px;
+                border: none;
+                border-radius: 12px;
+                background-color: #0f62ff;
+                color: $white;
+                cursor: pointer;
+                font-size: 14px;
+                font-weight: 600;
+                white-space: nowrap;
+            }
+        }
+
+        .department-list {
+            max-height: 260px;
+            overflow-y: auto;
+            display: grid;
+            gap: 8px;
+            padding-right: 4px;
+        }
+
+        .department-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #f7faff;
+            border: 1px solid #e0e8f7;
+            border-radius: 12px;
+            padding: 10px 12px;
+            cursor: pointer;
+            color: $dark-gray;
+            font-size: 14px;
+
+            input {
+                accent-color: #0f62ff;
+                width: 16px;
+                height: 16px;
+            }
+
+            span {
+                flex: 1;
+            }
+        }
+    }
+
+    .filtros-panel {
+        background-color: #f9f9f9;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        padding: 16px;
+        margin-bottom: 20px;
+        display: flex;
+        gap: 16px;
+        align-items: center;
+
+        .filtro-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+
+            label {
+                font-weight: 500;
+                color: $text-gray;
+            }
+
+            select {
+                padding: 6px 8px;
+                border: 1px solid #ddd;
+                border-radius: 4px;
+                font-size: 14px;
+            }
+        }
+
+        .limpiar-filtros {
+            padding: 6px 12px;
+            background-color: #6c757d;
+            color: $white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+
+            &:hover {
+                background-color: #5a6268;
+            }
+        }
+    }
+
     .cargando {
         text-align: center;
         padding: 40px;
@@ -67,12 +318,19 @@
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 
         thead {
-            background-color: $primary-color;
-            color: $white;
+            background-color: $primary-color; // El fondo azul se queda aquí
 
             th {
                 padding: 15px;
                 text-align: left;
+
+                /* --- MUEVE ESTO AQUÍ ADENTRO --- */
+                color: #ffffff !important;
+                text-transform: uppercase;
+                font-weight: 700;
+                font-size: 12px;
+                letter-spacing: 0.5px;
+                /* ------------------------------ */
 
                 &:nth-child(4),
                 &:nth-child(5) {

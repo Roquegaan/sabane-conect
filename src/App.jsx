@@ -16,6 +16,13 @@ function App() {
   const [selectedCurso, setSelectedCurso] = useState(null);
   const [historialErrores, setHistorialErrores] = useState([]);
 
+  // Estados para filtros y búsqueda
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedDepartamentos, setSelectedDepartamentos] = useState([]);
+  const [filterDropdownSearch, setFilterDropdownSearch] = useState('');
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
+  const [showFilters, setShowFilters] = useState(false);
+
   useEffect(() => {
     if (vista === 'empaquetador') {
       cargarCursos();
@@ -43,6 +50,84 @@ function App() {
       setLoading(false);
     }
   };
+
+  // Función para filtrar cursos
+  const filtrarCursos = () => {
+    let filtered = fullCursos;
+
+    // Filtro por búsqueda (nombre o ID)
+    if (searchTerm) {
+      filtered = filtered.filter(curso =>
+        curso.nombreCurso.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        curso.idCursoSiga.toString().includes(searchTerm)
+      );
+    }
+
+    // Filtro por departamentos seleccionados
+    if (selectedDepartamentos.length > 0) {
+      filtered = filtered.filter(curso =>
+        selectedDepartamentos.includes(curso.departamento?.nombre)
+      );
+    }
+
+    return filtered;
+  };
+
+  // Función para ordenar cursos
+  const ordenarCursos = (cursos) => {
+    if (!sortConfig.key) return cursos;
+
+    return [...cursos].sort((a, b) => {
+      let aValue = a[sortConfig.key];
+      let bValue = b[sortConfig.key];
+
+      if (sortConfig.key === 'departamento') {
+        aValue = a.departamento?.nombre || '';
+        bValue = b.departamento?.nombre || '';
+      }
+
+      if (aValue < bValue) {
+        return sortConfig.direction === 'asc' ? -1 : 1;
+      }
+      if (aValue > bValue) {
+        return sortConfig.direction === 'asc' ? 1 : -1;
+      }
+      return 0;
+    });
+  };
+
+  // Función para manejar clic en encabezado de tabla
+  const handleSort = (key) => {
+    let direction = 'asc';
+    if (sortConfig.key === key && sortConfig.direction === 'asc') {
+      direction = 'desc';
+    }
+    setSortConfig({ key, direction });
+  };
+
+  const handleToggleDepartamento = (departamento) => {
+    setSelectedDepartamentos((prev) =>
+      prev.includes(departamento)
+        ? prev.filter((item) => item !== departamento)
+        : [...prev, departamento]
+    );
+  };
+
+  const clearDropdownSearch = () => {
+    setFilterDropdownSearch('');
+  };
+
+  const cursosFiltrados = ordenarCursos(filtrarCursos());
+
+  // Obtener departamentos únicos
+  const departamentosUnicos = [...new Set(fullCursos.map(curso => curso.departamento?.nombre).filter(Boolean))].sort();
+
+  const departamentosFiltrados = departamentosUnicos.filter((departamento) =>
+    departamento.toLowerCase().includes(filterDropdownSearch.toLowerCase())
+  );
+
+  // Contar filtros activos en el dropdown
+  const filtrosActivos = selectedDepartamentos.length;
 
   const registrarError = (idCurso, error, operacion) => {
     const ahora = new Date();
@@ -99,6 +184,7 @@ function App() {
       const token = await getAccessToken();
       const resultado = await fetchCursosInList(token, [idIngresado]);
       setCursos(resultado);
+      setFullCursos(resultado); // Actualizar fullCursos también
     } catch (error) {
       console.error('Error buscando curso por ID:', error);
       registrarError(idIngresado, error, 'buscar');
@@ -109,6 +195,11 @@ function App() {
   };
 
   const limpiarBusqueda = () => {
+    setSearchTerm('');
+    setSelectedDepartamentos([]);
+    setFilterDropdownSearch('');
+    setSortConfig({ key: null, direction: 'asc' });
+    setShowFilters(false);
     if (fullCursos.length > 0) {
       setCursos(fullCursos);
     } else {
@@ -195,12 +286,33 @@ function App() {
       </div>
     );
   }
-
   if (vista === 'errores') {
     return (
       <div className="app-container" style={{ padding: 0 }}>
-        <Navbar onSearch={buscarCursoPorId} onClearSearch={limpiarBusqueda} showSearch={false} />
-        <RegistroErrores onBack={() => setVista('inicio')} historialErrores={historialErrores} />
+
+        <Navbar
+          onSearch={buscarCursoPorId}
+          onClearSearch={limpiarBusqueda}
+          showSearch={false}
+        />
+
+        <button
+          onClick={() =>
+            registrarError(
+              "PRUEBA-001",
+              new Error("Error de prueba del sistema"),
+              "test"
+            )
+          }
+        >
+          Probar módulo de errores
+        </button>
+
+        <RegistroErrores
+          onBack={() => setVista('inicio')}
+          historialErrores={historialErrores}
+        />
+
       </div>
     );
   }
@@ -210,7 +322,7 @@ function App() {
       <Navbar
         onSearch={buscarCursoPorId}
         onClearSearch={limpiarBusqueda}
-        showSearch={true}
+        showSearch={false}
       />
       <div className="empaquetador">
         <button
@@ -241,6 +353,86 @@ function App() {
           </button>
         </div>
 
+        {/* Controles de tabla */}
+        <div className="table-controls">
+          <button
+            className="filtros-btn"
+            onClick={() => setShowFilters(!showFilters)}
+            type="button"
+          >
+            Filtros
+            {filtrosActivos > 0 && (
+              <span className="badge">{filtrosActivos}</span>
+            )}
+            <span className={`arrow ${showFilters ? 'open' : ''}`}>▼</span>
+          </button>
+          <div className="search-container">
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Buscar cursos"
+              className="search-input"
+            />
+            <span className="search-icon">🔍</span>
+            {searchTerm && (
+              <button
+                type="button"
+                className="clear-search"
+                onClick={() => setSearchTerm('')}
+                aria-label="Limpiar búsqueda"
+              >
+                ×
+              </button>
+            )}
+          </div>
+
+          {showFilters && (
+            <div className="filtros-dropdown">
+              <div className="dropdown-header">
+                <button
+                  type="button"
+                  className="dropdown-back"
+                  onClick={() => setShowFilters(false)}
+                >
+                  ←
+                </button>
+                <div className="dropdown-title">Programa / Departamento Académi...</div>
+              </div>
+
+              <div className="dropdown-search-row">
+                <input
+                  type="text"
+                  value={filterDropdownSearch}
+                  onChange={(e) => setFilterDropdownSearch(e.target.value)}
+                  placeholder="Buscar..."
+                  className="dropdown-search-input"
+                />
+                <button
+                  type="button"
+                  className="dropdown-clear-btn"
+                  onClick={clearDropdownSearch}
+                >
+                  Borrar
+                </button>
+              </div>
+
+              <div className="department-list">
+                {departamentosFiltrados.map((dept) => (
+                  <label key={dept} className="department-item">
+                    <input
+                      type="checkbox"
+                      checked={selectedDepartamentos.includes(dept)}
+                      onChange={() => handleToggleDepartamento(dept)}
+                    />
+                    <span>{dept}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
         {loading ? (
           <div className="cargando">
             Cargando cursos...
@@ -249,16 +441,24 @@ function App() {
           <table className="tabla">
             <thead>
               <tr>
-                <th>ID SIGA</th>
-                <th>Nombre del Curso</th>
-                <th>Departamento</th>
-                <th>Créditos</th>
+                <th onClick={() => handleSort('idCursoSiga')} style={{ cursor: 'pointer' }}>
+                  ID SIGA {sortConfig.key === 'idCursoSiga' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                </th>
+                <th onClick={() => handleSort('nombreCurso')} style={{ cursor: 'pointer' }}>
+                  Nombre del Curso {sortConfig.key === 'nombreCurso' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                </th>
+                <th onClick={() => handleSort('departamento')} style={{ cursor: 'pointer' }}>
+                  Departamento {sortConfig.key === 'departamento' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                </th>
+                <th onClick={() => handleSort('creditos')} style={{ cursor: 'pointer' }}>
+                  Créditos {sortConfig.key === 'creditos' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                </th>
                 <th>Modalidad</th>
                 <th>Acciones</th>
               </tr>
             </thead>
             <tbody>
-              {cursos.map((curso) => (
+              {cursosFiltrados.map((curso) => (
                 <tr key={curso.idCursoSiga}>
                   <td>{curso.idCursoSiga}</td>
                   <td>{curso.nombreCurso}</td>
