@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import BotonVolver from './BotonVolver';
 import '../styles/RegistroErrores.scss';
 
 const obtenerDiagnostico = (codigoError, operacion, idCurso) => {
@@ -127,6 +128,11 @@ function RegistroErrores({ onBack, historialErrores = [] }) {
 
   return (
     <div className="registro-errores">
+      <BotonVolver
+        texto="Volver al Dashboard"
+        onClick={onBack}
+      />
+
       <div className="seccion-encabezado">
         <div>
           <h1>Registro de Errores y Diagnóstico</h1>
@@ -214,25 +220,6 @@ function RegistroErrores({ onBack, historialErrores = [] }) {
               <p>{errorSeleccionado.descripcion}</p>
             </div>
 
-            <div className="detalle-columnas">
-              <div>
-                <h4>Causa Técnica</h4>
-                <ul>
-                  {errorSeleccionado.causa.map((item, index) => (
-                    <li key={`causa-${index}`}>{item}</li>
-                  ))}
-                </ul>
-              </div>
-              <div>
-                <h4>Solución Sugerida</h4>
-                <ul>
-                  {errorSeleccionado.solucion.map((item, index) => (
-                    <li key={`solucion-${index}`}>{item}</li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-
             <div className="logs-servidor">
               <div className="logs-header">
                 <h4>Logs del Servidor</h4>
@@ -243,11 +230,6 @@ function RegistroErrores({ onBack, historialErrores = [] }) {
         </section>
       )}
 
-      <div className="volver-boton-container">
-        <button className="volver-dashboard" onClick={onBack}>
-          ← Volver al Dashboard
-        </button>
-      </div>
     </div>
   );
 }

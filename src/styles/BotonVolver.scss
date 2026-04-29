@@ -1,0 +1,26 @@
+@import './variables.scss';
+
+.boton-volver {
+    background: none;
+    border: none;
+    color: #004b87;
+    font-weight: bold;
+    font-size: 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0;
+
+    &:hover {
+        text-decoration: underline;
+    }
+
+    .flecha {
+        font-size: 16px;
+    }
+
+    .texto {
+        font-size: 16px;
+    }
+}

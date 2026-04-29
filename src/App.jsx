@@ -261,7 +261,7 @@ function App() {
         />
         <div className="inicio">
           <header>
-            <h1 className="saludo">¡Hola, Roque!</h1>
+            <h1 className="saludo">¡Hola!</h1>
             <p className="bienvenida">Bienvenido a SABANA CONNECT</p>
           </header>
 
@@ -325,112 +325,117 @@ function App() {
         showSearch={false}
       />
       <div className="empaquetador">
-        <button
-          onClick={() => setVista('inicio')}
-          className="volver-boton"
-        >
-          ← Volver al inicio
-        </button>
-
-        <h2 className="titulo">Panel del Empaquetador</h2>
-        <p className="descripcion">Mostrando resultados de la API de Cursos.</p>
-
-        {/* Botones de descarga */}
-        <div className="botones-descarga">
+        {/* Nuevo contenedor para alinear todo a la izquierda */}
+        <div className="header-seccion">
           <button
-            onClick={descargarJSON}
-            disabled={cursos.length === 0}
-            className="boton-descarga json"
+            onClick={() => setVista('inicio')}
+            className="volver-boton"
           >
-            ↓ Descargar JSON
+            ← Volver al inicio
           </button>
-          <button
-            onClick={descargarCSV}
-            disabled={cursos.length === 0}
-            className="boton-descarga csv"
-          >
-            ↓ Descargar CSV
-          </button>
+
+          <h2 className="titulo">Panel del Empaquetador</h2>
+          <p className="descripcion">Mostrando resultados de la API de Cursos.</p>
         </div>
 
-        {/* Controles de tabla */}
-        <div className="table-controls">
-          <button
-            className="filtros-btn"
-            onClick={() => setShowFilters(!showFilters)}
-            type="button"
-          >
-            Filtros
-            {filtrosActivos > 0 && (
-              <span className="badge">{filtrosActivos}</span>
-            )}
-            <span className={`arrow ${showFilters ? 'open' : ''}`}>▼</span>
-          </button>
-          <div className="search-container">
-            <input
-              type="text"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Buscar cursos"
-              className="search-input"
-            />
-            <span className="search-icon">🔍</span>
-            {searchTerm && (
-              <button
-                type="button"
-                className="clear-search"
-                onClick={() => setSearchTerm('')}
-                aria-label="Limpiar búsqueda"
-              >
-                ×
-              </button>
-            )}
+        <div className="header-acciones">
+          {/* Botones de descarga */}
+          <div className="botones-descarga">
+            <button
+              onClick={descargarJSON}
+              disabled={cursos.length === 0}
+              className="boton-descarga json"
+            >
+              ↓ Descargar JSON
+            </button>
+            <button
+              onClick={descargarCSV}
+              disabled={cursos.length === 0}
+              className="boton-descarga csv"
+            >
+              ↓ Descargar CSV
+            </button>
           </div>
 
-          {showFilters && (
-            <div className="filtros-dropdown">
-              <div className="dropdown-header">
+          {/* Controles de tabla */}
+          <div className="table-controls">
+            <button
+              className="filtros-btn"
+              onClick={() => setShowFilters(!showFilters)}
+              type="button"
+            >
+              Filtros
+              {filtrosActivos > 0 && (
+                <span className="badge">{filtrosActivos}</span>
+              )}
+              <span className={`arrow ${showFilters ? 'open' : ''}`}>▼</span>
+            </button>
+            <div className="search-container">
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="Buscar cursos"
+                className="search-input"
+              />
+              <span className="search-icon">🔍</span>
+              {searchTerm && (
                 <button
                   type="button"
-                  className="dropdown-back"
-                  onClick={() => setShowFilters(false)}
+                  className="clear-search"
+                  onClick={() => setSearchTerm('')}
+                  aria-label="Limpiar búsqueda"
                 >
-                  ←
+                  ×
                 </button>
-                <div className="dropdown-title">Programa / Departamento Académi...</div>
-              </div>
-
-              <div className="dropdown-search-row">
-                <input
-                  type="text"
-                  value={filterDropdownSearch}
-                  onChange={(e) => setFilterDropdownSearch(e.target.value)}
-                  placeholder="Buscar..."
-                  className="dropdown-search-input"
-                />
-                <button
-                  type="button"
-                  className="dropdown-clear-btn"
-                  onClick={clearDropdownSearch}
-                >
-                  Borrar
-                </button>
-              </div>
-
-              <div className="department-list">
-                {departamentosFiltrados.map((dept) => (
-                  <label key={dept} className="department-item">
-                    <input
-                      type="checkbox"
-                      checked={selectedDepartamentos.includes(dept)}
-                      onChange={() => handleToggleDepartamento(dept)}
-                    />
-                    <span>{dept}</span>
-                  </label>
-                ))}
-              </div>
+              )}
             </div>
-          )}
+
+            {showFilters && (
+              <div className="filtros-dropdown">
+                <div className="dropdown-header">
+                  <button
+                    type="button"
+                    className="dropdown-back"
+                    onClick={() => setShowFilters(false)}
+                  >
+                    ←
+                  </button>
+                  <div className="dropdown-title">Programa / Departamento Académi...</div>
+                </div>
+
+                <div className="dropdown-search-row">
+                  <input
+                    type="text"
+                    value={filterDropdownSearch}
+                    onChange={(e) => setFilterDropdownSearch(e.target.value)}
+                    placeholder="Buscar..."
+                    className="dropdown-search-input"
+                  />
+                  <button
+                    type="button"
+                    className="dropdown-clear-btn"
+                    onClick={clearDropdownSearch}
+                  >
+                    Borrar
+                  </button>
+                </div>
+
+                <div className="lista-opciones">
+                  {departamentosFiltrados.map((dept) => (
+                    <label key={dept} className="opcion-item">
+                      <input
+                        type="checkbox"
+                        checked={selectedDepartamentos.includes(dept)}
+                        onChange={() => handleToggleDepartamento(dept)}
+                      />
+                      <span>{dept}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
         </div>
 
         {loading ? (

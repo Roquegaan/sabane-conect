@@ -1,0 +1,22 @@
+.boton-volver {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: none;
+    border: none;
+    color: #004b87; // El azul institucional que usas
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 10px 0;
+    transition: opacity 0.2s;
+
+    &:hover {
+        opacity: 0.8;
+        text-decoration: underline; // Detalle visual profesional
+    }
+
+    .flecha {
+        font-size: 18px;
+    }
+}
