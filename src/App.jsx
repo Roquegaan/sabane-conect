@@ -3,6 +3,7 @@ import './App.css';
 import Navbar from './components/Navbar';
 import ModuloCard from './components/ModuloCard';
 import RegistroErrores from './components/RegistroErrores';
+import ErrorBoundary from './components/ErrorBoundary';
 import { getAccessToken, fetchCursosInList } from './services/apiCursos';
 import './styles/Inicio.scss';
 import './styles/Empaquetador.scss';
@@ -58,15 +59,15 @@ function App() {
     // Filtro por búsqueda (nombre o ID)
     if (searchTerm) {
       filtered = filtered.filter(curso =>
-        curso.nombreCurso.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        curso.idCursoSiga.toString().includes(searchTerm)
+        curso?.nombreCurso?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        curso?.idCursoSiga?.toString().includes(searchTerm)
       );
     }
 
     // Filtro por departamentos seleccionados
     if (selectedDepartamentos.length > 0) {
       filtered = filtered.filter(curso =>
-        selectedDepartamentos.includes(curso.departamento?.nombre)
+        selectedDepartamentos.includes(curso?.departamento?.nombre)
       );
     }
 
@@ -77,32 +78,54 @@ function App() {
   const ordenarCursos = (cursos) => {
     if (!sortConfig.key) return cursos;
 
-    return [...cursos].sort((a, b) => {
-      let aValue = a[sortConfig.key];
-      let bValue = b[sortConfig.key];
+    try {
+      return [...cursos].sort((a, b) => {
+        const campo = sortConfig.key;
+        let valorA, valorB;
 
-      if (sortConfig.key === 'departamento') {
-        aValue = a.departamento?.nombre || '';
-        bValue = b.departamento?.nombre || '';
-      }
+        // Obtener valores seguros
+        if (campo === 'departamento') {
+          valorA = a?.departamento?.nombre || '';
+          valorB = b?.departamento?.nombre || '';
+        } else {
+          valorA = a?.[campo] || '';
+          valorB = b?.[campo] || '';
+        }
 
-      if (aValue < bValue) {
-        return sortConfig.direction === 'asc' ? -1 : 1;
-      }
-      if (aValue > bValue) {
-        return sortConfig.direction === 'asc' ? 1 : -1;
-      }
-      return 0;
-    });
+        // Convertir a string y comparar
+        const stringA = valorA.toString().trim();
+        const stringB = valorB.toString().trim();
+        const comparison = stringA.localeCompare(stringB, undefined, { numeric: true, sensitivity: 'base' });
+
+        return sortConfig.direction === 'asc' ? comparison : -comparison;
+      });
+    } catch (error) {
+      console.error('Error en ordenarCursos:', error, { sortKey: sortConfig.key });
+      return cursos;
+    }
   };
 
   // Función para manejar clic en encabezado de tabla
-  const handleSort = (key) => {
-    let direction = 'asc';
-    if (sortConfig.key === key && sortConfig.direction === 'asc') {
-      direction = 'desc';
+  const handleSort = (event, key) => {
+    try {
+      event?.preventDefault?.();
+      event?.stopPropagation?.();
+
+      let direction = 'asc';
+      if (sortConfig.key === key && sortConfig.direction === 'asc') {
+        direction = 'desc';
+      }
+      setSortConfig({ key, direction });
+    } catch (error) {
+      console.error('Error al ordenar tabla:', error, { key });
     }
-    setSortConfig({ key, direction });
+  };
+
+  const handleViewDetails = (event, curso) => {
+    event?.preventDefault?.();
+    event?.stopPropagation?.();
+    if (!curso) return;
+    setSelectedCurso(curso);
   };
 
   const handleToggleDepartamento = (departamento) => {
@@ -120,7 +143,7 @@ function App() {
   const cursosFiltrados = ordenarCursos(filtrarCursos());
 
   // Obtener departamentos únicos
-  const departamentosUnicos = [...new Set(fullCursos.map(curso => curso.departamento?.nombre).filter(Boolean))].sort();
+  const departamentosUnicos = [...new Set(fullCursos.map(curso => curso?.departamento?.nombre).filter(Boolean))].sort();
 
   const departamentosFiltrados = departamentosUnicos.filter((departamento) =>
     departamento.toLowerCase().includes(filterDropdownSearch.toLowerCase())
@@ -318,187 +341,195 @@ function App() {
   }
 
   return (
-    <div className="app-container" style={{ padding: 0 }}>
-      <Navbar
-        onSearch={buscarCursoPorId}
-        onClearSearch={limpiarBusqueda}
-        showSearch={false}
-      />
-      <div className="empaquetador">
-        {/* Nuevo contenedor para alinear todo a la izquierda */}
-        <div className="header-seccion">
-          <button
-            onClick={() => setVista('inicio')}
-            className="volver-boton"
-          >
-            ← Volver al inicio
-          </button>
-
-          <h2 className="titulo">Panel del Empaquetador</h2>
-          <p className="descripcion">Mostrando resultados de la API de Cursos.</p>
-        </div>
-
-        <div className="header-acciones">
-          {/* Botones de descarga */}
-          <div className="botones-descarga">
+    <ErrorBoundary>
+      <div className="app-container" style={{ padding: 0 }}>
+        <Navbar
+          onSearch={buscarCursoPorId}
+          onClearSearch={limpiarBusqueda}
+          showSearch={false}
+        />
+        <div className="empaquetador">
+          {/* Nuevo contenedor para alinear todo a la izquierda */}
+          <div className="header-seccion">
             <button
-              onClick={descargarJSON}
-              disabled={cursos.length === 0}
-              className="boton-descarga json"
+              onClick={() => setVista('inicio')}
+              className="volver-boton"
             >
-              ↓ Descargar JSON
+              ← Volver al inicio
             </button>
-            <button
-              onClick={descargarCSV}
-              disabled={cursos.length === 0}
-              className="boton-descarga csv"
-            >
-              ↓ Descargar CSV
-            </button>
+
+            <h2 className="titulo">Panel del Empaquetador</h2>
+            <p className="descripcion">Mostrando resultados de la API de Cursos.</p>
           </div>
 
-          {/* Controles de tabla */}
-          <div className="table-controls">
-            <button
-              className="filtros-btn"
-              onClick={() => setShowFilters(!showFilters)}
-              type="button"
-            >
-              Filtros
-              {filtrosActivos > 0 && (
-                <span className="badge">{filtrosActivos}</span>
-              )}
-              <span className={`arrow ${showFilters ? 'open' : ''}`}>▼</span>
-            </button>
-            <div className="search-container">
-              <input
-                type="text"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Buscar cursos"
-                className="search-input"
-              />
-              <span className="search-icon">🔍</span>
-              {searchTerm && (
-                <button
-                  type="button"
-                  className="clear-search"
-                  onClick={() => setSearchTerm('')}
-                  aria-label="Limpiar búsqueda"
-                >
-                  ×
-                </button>
-              )}
+          <div className="header-acciones">
+            {/* Botones de descarga */}
+            <div className="botones-descarga">
+              <button
+                onClick={descargarJSON}
+                disabled={cursos.length === 0}
+                className="boton-descarga json"
+              >
+                ↓ Descargar JSON
+              </button>
+              <button
+                onClick={descargarCSV}
+                disabled={cursos.length === 0}
+                className="boton-descarga csv"
+              >
+                ↓ Descargar CSV
+              </button>
             </div>
 
-            {showFilters && (
-              <div className="filtros-dropdown">
-                <div className="dropdown-header">
+            {/* Controles de tabla */}
+            <div className="table-controls">
+              <button
+                className="filtros-btn"
+                onClick={() => setShowFilters(!showFilters)}
+                type="button"
+              >
+                Filtros
+                {filtrosActivos > 0 && (
+                  <span className="badge">{filtrosActivos}</span>
+                )}
+                <span className={`arrow ${showFilters ? 'open' : ''}`}>▼</span>
+              </button>
+              <div className="search-container">
+                <input
+                  type="text"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  placeholder="Buscar cursos"
+                  className="search-input"
+                />
+                <span className="search-icon">🔍</span>
+                {searchTerm && (
                   <button
                     type="button"
-                    className="dropdown-back"
-                    onClick={() => setShowFilters(false)}
+                    className="clear-search"
+                    onClick={() => setSearchTerm('')}
+                    aria-label="Limpiar búsqueda"
                   >
-                    ←
+                    ×
                   </button>
-                  <div className="dropdown-title">Programa / Departamento Académi...</div>
-                </div>
+                )}
+              </div>
 
-                <div className="dropdown-search-row">
-                  <button
-                    type="button"
-                    className="dropdown-clear-link"
-                    onClick={clearDropdownSearch}
-                  >
-                    Borrar
-                  </button>
-                  <div className="dropdown-search-wrapper">
-                    <input
-                      type="text"
-                      value={filterDropdownSearch}
-                      onChange={(e) => setFilterDropdownSearch(e.target.value)}
-                      placeholder="Buscar..."
-                      className="dropdown-search-input"
-                    />
-                    <span className="dropdown-search-icon">🔍</span>
+              {showFilters && (
+                <div className="filtros-dropdown">
+                  <div className="dropdown-header">
+                    <button
+                      type="button"
+                      className="dropdown-back"
+                      onClick={() => setShowFilters(false)}
+                    >
+                      ←
+                    </button>
+                    <div className="dropdown-title">Programa / Departamento Académi...</div>
+                  </div>
+
+                  <div className="dropdown-search-row">
+                    <button
+                      type="button"
+                      className="dropdown-clear-link"
+                      onClick={clearDropdownSearch}
+                    >
+                      Borrar
+                    </button>
+                    <div className="dropdown-search-wrapper">
+                      <input
+                        type="text"
+                        value={filterDropdownSearch}
+                        onChange={(e) => setFilterDropdownSearch(e.target.value)}
+                        placeholder="Buscar..."
+                        className="dropdown-search-input"
+                      />
+                      <span className="dropdown-search-icon">🔍</span>
+                    </div>
+                  </div>
+
+                  <div className="lista-desplegable">
+                    {departamentosFiltrados.map((dept) => (
+                      <label key={dept} className="fila-opcion">
+                        <div className="fila-contenido">
+                          <input
+                            type="checkbox"
+                            checked={selectedDepartamentos.includes(dept)}
+                            onChange={() => handleToggleDepartamento(dept)}
+                          />
+                          <span>{dept}</span>
+                        </div>
+                      </label>
+                    ))}
                   </div>
                 </div>
-
-                <div className="lista-desplegable">
-                  {departamentosFiltrados.map((dept) => (
-                    <label key={dept} className="fila-opcion">
-                      <input
-                        type="checkbox"
-                        checked={selectedDepartamentos.includes(dept)}
-                        onChange={() => handleToggleDepartamento(dept)}
-                      />
-                      <span>{dept}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {loading ? (
-          <div className="cargando">
-            Cargando cursos...
-          </div>
-        ) : (
-          <table className="tabla">
-            <thead>
-              <tr>
-                <th onClick={() => handleSort('idCursoSiga')} style={{ cursor: 'pointer' }}>
-                  ID SIGA {sortConfig.key === 'idCursoSiga' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
-                </th>
-                <th onClick={() => handleSort('nombreCurso')} style={{ cursor: 'pointer' }}>
-                  Nombre del Curso {sortConfig.key === 'nombreCurso' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
-                </th>
-                <th onClick={() => handleSort('departamento')} style={{ cursor: 'pointer' }}>
-                  Departamento {sortConfig.key === 'departamento' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
-                </th>
-                <th onClick={() => handleSort('creditos')} style={{ cursor: 'pointer' }}>
-                  Créditos {sortConfig.key === 'creditos' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
-                </th>
-                <th>Modalidad</th>
-                <th>Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              {cursosFiltrados.map((curso) => (
-                <tr key={curso.idCursoSiga}>
-                  <td>{curso.idCursoSiga}</td>
-                  <td>{curso.nombreCurso}</td>
-                  <td>{curso.departamento?.nombre}</td>
-                  <td>{curso.creditos}</td>
-                  <td>{curso.modalidad}</td>
-                  <td>
-                    <button onClick={() => setSelectedCurso(curso)}>Ver Descripción</button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-
-        {selectedCurso && (
-          <div className="modal-overlay" onClick={() => setSelectedCurso(null)}>
-            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-              <h2>{selectedCurso.nombreCurso}</h2>
-              <p>{selectedCurso.descripcion}</p>
-              <div className="detalles-tecnicos">
-                <h3>Detalles Técnicos</h3>
-                <p>Nivel de Formación: {selectedCurso.nivelFormacion}</p>
-                <p>Idioma: {selectedCurso.idioma}</p>
-                <p>Total de Horas: {selectedCurso.totalHoras}</p>
-              </div>
-              <button onClick={() => setSelectedCurso(null)}>Cerrar</button>
+              )}
             </div>
           </div>
-        )}
+
+          {loading ? (
+            <div className="cargando">
+              Cargando cursos...
+            </div>) : cursosFiltrados.length === 0 ? (
+              <div className="sin-cursos">
+                No hay cursos disponibles. Ajustá la búsqueda o los filtros.
+              </div>) : (
+            <table className="tabla">
+              <thead>
+                <tr>
+                  <th onClick={(e) => handleSort(e, 'idCursoSiga')} style={{ cursor: 'pointer' }}>
+                    ID SIGA {sortConfig.key === 'idCursoSiga' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                  </th>
+                  <th onClick={(e) => handleSort(e, 'nombreCurso')} style={{ cursor: 'pointer' }}>
+                    Nombre del Curso {sortConfig.key === 'nombreCurso' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                  </th>
+                  <th onClick={(e) => handleSort(e, 'departamento')} style={{ cursor: 'pointer' }}>
+                    Departamento {sortConfig.key === 'departamento' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                  </th>
+                  <th onClick={(e) => handleSort(e, 'creditos')} style={{ cursor: 'pointer' }}>
+                    Créditos {sortConfig.key === 'creditos' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                  </th>
+                  <th>Modalidad</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                {cursosFiltrados.map((curso) => (
+                  <tr key={curso?.idCursoSiga ?? Math.random()}>
+                    <td>{curso?.idCursoSiga ?? 'N/A'}</td>
+                    <td>{curso?.nombreCurso ?? 'Sin nombre'}</td>
+                    <td>{curso?.departamento?.nombre ?? 'N/A'}</td>
+                    <td>{curso?.creditos ?? 'N/A'}</td>
+                    <td>{curso?.modalidad ?? 'N/A'}</td>
+                    <td>
+                      <button type="button" onClick={(e) => handleViewDetails(e, curso)}>
+                        Ver Descripción
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+
+          {selectedCurso && (
+            <div className="modal-overlay" onClick={() => setSelectedCurso(null)}>
+              <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+                <h2>{selectedCurso?.nombreCurso ?? 'Curso seleccionado'}</h2>
+                <p>{selectedCurso?.descripcion ?? 'No hay descripción disponible.'}</p>
+                <div className="detalles-tecnicos">
+                  <h3>Detalles Técnicos</h3>
+                  <p>Nivel de Formación: {selectedCurso?.nivelFormacion ?? 'N/A'}</p>
+                  <p>Idioma: {selectedCurso?.idioma ?? 'N/A'}</p>
+                  <p>Total de Horas: {selectedCurso?.totalHoras ?? 'N/A'}</p>
+                </div>
+                <button onClick={() => setSelectedCurso(null)}>Cerrar</button>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
-    </div>
+    </ErrorBoundary>
   );
 }
 
