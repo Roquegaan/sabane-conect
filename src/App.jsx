@@ -405,25 +405,28 @@ function App() {
                 </div>
 
                 <div className="dropdown-search-row">
-                  <input
-                    type="text"
-                    value={filterDropdownSearch}
-                    onChange={(e) => setFilterDropdownSearch(e.target.value)}
-                    placeholder="Buscar..."
-                    className="dropdown-search-input"
-                  />
                   <button
                     type="button"
-                    className="dropdown-clear-btn"
+                    className="dropdown-clear-link"
                     onClick={clearDropdownSearch}
                   >
                     Borrar
                   </button>
+                  <div className="dropdown-search-wrapper">
+                    <input
+                      type="text"
+                      value={filterDropdownSearch}
+                      onChange={(e) => setFilterDropdownSearch(e.target.value)}
+                      placeholder="Buscar..."
+                      className="dropdown-search-input"
+                    />
+                    <span className="dropdown-search-icon">🔍</span>
+                  </div>
                 </div>
 
-                <div className="lista-opciones">
+                <div className="lista-desplegable">
                   {departamentosFiltrados.map((dept) => (
-                    <label key={dept} className="opcion-item">
+                    <label key={dept} className="fila-opcion">
                       <input
                         type="checkbox"
                         checked={selectedDepartamentos.includes(dept)}
