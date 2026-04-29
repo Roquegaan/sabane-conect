@@ -3,7 +3,6 @@ import './App.css';
 import Navbar from './components/Navbar';
 import ModuloCard from './components/ModuloCard';
 import RegistroErrores from './components/RegistroErrores';
-import ErrorBoundary from './components/ErrorBoundary';
 import { getAccessToken, fetchCursosInList } from './services/apiCursos';
 import './styles/Inicio.scss';
 import './styles/Empaquetador.scss';
@@ -105,7 +104,7 @@ function App() {
     }
   };
 
-  // Función para manejar clic en encabezado de tabla
+  // Función para manejar clic en encabezado de tabla (con captura de error silenciosa)
   const handleSort = (event, key) => {
     try {
       event?.preventDefault?.();
@@ -117,7 +116,8 @@ function App() {
       }
       setSortConfig({ key, direction });
     } catch (error) {
-      console.error('Error al ordenar tabla:', error, { key });
+      console.error('Error al ordenar:', error);
+      // No lanzamos el error, solo lo registramos. La tabla permanece igual.
     }
   };
 
@@ -341,195 +341,193 @@ function App() {
   }
 
   return (
-    <ErrorBoundary>
-      <div className="app-container" style={{ padding: 0 }}>
-        <Navbar
-          onSearch={buscarCursoPorId}
-          onClearSearch={limpiarBusqueda}
-          showSearch={false}
-        />
-        <div className="empaquetador">
-          {/* Nuevo contenedor para alinear todo a la izquierda */}
-          <div className="header-seccion">
-            <button
-              onClick={() => setVista('inicio')}
-              className="volver-boton"
-            >
-              ← Volver al inicio
-            </button>
+    <div className="app-container" style={{ padding: 0 }}>
+      <Navbar
+        onSearch={buscarCursoPorId}
+        onClearSearch={limpiarBusqueda}
+        showSearch={false}
+      />
+      <div className="empaquetador">
+        {/* Nuevo contenedor para alinear todo a la izquierda */}
+        <div className="header-seccion">
+          <button
+            onClick={() => setVista('inicio')}
+            className="volver-boton"
+          >
+            ← Volver al inicio
+          </button>
 
-            <h2 className="titulo">Panel del Empaquetador</h2>
-            <p className="descripcion">Mostrando resultados de la API de Cursos.</p>
+          <h2 className="titulo">Panel del Empaquetador</h2>
+          <p className="descripcion">Mostrando resultados de la API de Cursos.</p>
+        </div>
+
+        <div className="header-acciones">
+          {/* Botones de descarga */}
+          <div className="botones-descarga">
+            <button
+              onClick={descargarJSON}
+              disabled={cursos.length === 0}
+              className="boton-descarga json"
+            >
+              ↓ Descargar JSON
+            </button>
+            <button
+              onClick={descargarCSV}
+              disabled={cursos.length === 0}
+              className="boton-descarga csv"
+            >
+              ↓ Descargar CSV
+            </button>
           </div>
 
-          <div className="header-acciones">
-            {/* Botones de descarga */}
-            <div className="botones-descarga">
-              <button
-                onClick={descargarJSON}
-                disabled={cursos.length === 0}
-                className="boton-descarga json"
-              >
-                ↓ Descargar JSON
-              </button>
-              <button
-                onClick={descargarCSV}
-                disabled={cursos.length === 0}
-                className="boton-descarga csv"
-              >
-                ↓ Descargar CSV
-              </button>
-            </div>
-
-            {/* Controles de tabla */}
-            <div className="table-controls">
-              <button
-                className="filtros-btn"
-                onClick={() => setShowFilters(!showFilters)}
-                type="button"
-              >
-                Filtros
-                {filtrosActivos > 0 && (
-                  <span className="badge">{filtrosActivos}</span>
-                )}
-                <span className={`arrow ${showFilters ? 'open' : ''}`}>▼</span>
-              </button>
-              <div className="search-container">
-                <input
-                  type="text"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  placeholder="Buscar cursos"
-                  className="search-input"
-                />
-                <span className="search-icon">🔍</span>
-                {searchTerm && (
-                  <button
-                    type="button"
-                    className="clear-search"
-                    onClick={() => setSearchTerm('')}
-                    aria-label="Limpiar búsqueda"
-                  >
-                    ×
-                  </button>
-                )}
-              </div>
-
-              {showFilters && (
-                <div className="filtros-dropdown">
-                  <div className="dropdown-header">
-                    <button
-                      type="button"
-                      className="dropdown-back"
-                      onClick={() => setShowFilters(false)}
-                    >
-                      ←
-                    </button>
-                    <div className="dropdown-title">Programa / Departamento Académi...</div>
-                  </div>
-
-                  <div className="dropdown-search-row">
-                    <button
-                      type="button"
-                      className="dropdown-clear-link"
-                      onClick={clearDropdownSearch}
-                    >
-                      Borrar
-                    </button>
-                    <div className="dropdown-search-wrapper">
-                      <input
-                        type="text"
-                        value={filterDropdownSearch}
-                        onChange={(e) => setFilterDropdownSearch(e.target.value)}
-                        placeholder="Buscar..."
-                        className="dropdown-search-input"
-                      />
-                      <span className="dropdown-search-icon">🔍</span>
-                    </div>
-                  </div>
-
-                  <div className="lista-desplegable">
-                    {departamentosFiltrados.map((dept) => (
-                      <label key={dept} className="fila-opcion">
-                        <div className="fila-contenido">
-                          <input
-                            type="checkbox"
-                            checked={selectedDepartamentos.includes(dept)}
-                            onChange={() => handleToggleDepartamento(dept)}
-                          />
-                          <span>{dept}</span>
-                        </div>
-                      </label>
-                    ))}
-                  </div>
-                </div>
+          {/* Controles de tabla */}
+          <div className="table-controls">
+            <button
+              className="filtros-btn"
+              onClick={() => setShowFilters(!showFilters)}
+              type="button"
+            >
+              Filtros
+              {filtrosActivos > 0 && (
+                <span className="badge">{filtrosActivos}</span>
+              )}
+              <span className={`arrow ${showFilters ? 'open' : ''}`}>▼</span>
+            </button>
+            <div className="search-container">
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="Buscar cursos"
+                className="search-input"
+              />
+              <span className="search-icon">🔍</span>
+              {searchTerm && (
+                <button
+                  type="button"
+                  className="clear-search"
+                  onClick={() => setSearchTerm('')}
+                  aria-label="Limpiar búsqueda"
+                >
+                  ×
+                </button>
               )}
             </div>
-          </div>
 
-          {loading ? (
-            <div className="cargando">
-              Cargando cursos...
-            </div>) : cursosFiltrados.length === 0 ? (
-              <div className="sin-cursos">
-                No hay cursos disponibles. Ajustá la búsqueda o los filtros.
-              </div>) : (
-            <table className="tabla">
-              <thead>
-                <tr>
-                  <th onClick={(e) => handleSort(e, 'idCursoSiga')} style={{ cursor: 'pointer' }}>
-                    ID SIGA {sortConfig.key === 'idCursoSiga' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
-                  </th>
-                  <th onClick={(e) => handleSort(e, 'nombreCurso')} style={{ cursor: 'pointer' }}>
-                    Nombre del Curso {sortConfig.key === 'nombreCurso' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
-                  </th>
-                  <th onClick={(e) => handleSort(e, 'departamento')} style={{ cursor: 'pointer' }}>
-                    Departamento {sortConfig.key === 'departamento' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
-                  </th>
-                  <th onClick={(e) => handleSort(e, 'creditos')} style={{ cursor: 'pointer' }}>
-                    Créditos {sortConfig.key === 'creditos' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
-                  </th>
-                  <th>Modalidad</th>
-                  <th>Acciones</th>
-                </tr>
-              </thead>
-              <tbody>
-                {cursosFiltrados.map((curso) => (
-                  <tr key={curso?.idCursoSiga ?? Math.random()}>
-                    <td>{curso?.idCursoSiga ?? 'N/A'}</td>
-                    <td>{curso?.nombreCurso ?? 'Sin nombre'}</td>
-                    <td>{curso?.departamento?.nombre ?? 'N/A'}</td>
-                    <td>{curso?.creditos ?? 'N/A'}</td>
-                    <td>{curso?.modalidad ?? 'N/A'}</td>
-                    <td>
-                      <button type="button" onClick={(e) => handleViewDetails(e, curso)}>
-                        Ver Descripción
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-
-          {selectedCurso && (
-            <div className="modal-overlay" onClick={() => setSelectedCurso(null)}>
-              <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-                <h2>{selectedCurso?.nombreCurso ?? 'Curso seleccionado'}</h2>
-                <p>{selectedCurso?.descripcion ?? 'No hay descripción disponible.'}</p>
-                <div className="detalles-tecnicos">
-                  <h3>Detalles Técnicos</h3>
-                  <p>Nivel de Formación: {selectedCurso?.nivelFormacion ?? 'N/A'}</p>
-                  <p>Idioma: {selectedCurso?.idioma ?? 'N/A'}</p>
-                  <p>Total de Horas: {selectedCurso?.totalHoras ?? 'N/A'}</p>
+            {showFilters && (
+              <div className="filtros-dropdown">
+                <div className="dropdown-header">
+                  <button
+                    type="button"
+                    className="dropdown-back"
+                    onClick={() => setShowFilters(false)}
+                  >
+                    ←
+                  </button>
+                  <div className="dropdown-title">Programa / Departamento Académi...</div>
                 </div>
-                <button onClick={() => setSelectedCurso(null)}>Cerrar</button>
+
+                <div className="dropdown-search-row">
+                  <button
+                    type="button"
+                    className="dropdown-clear-link"
+                    onClick={clearDropdownSearch}
+                  >
+                    Borrar
+                  </button>
+                  <div className="dropdown-search-wrapper">
+                    <input
+                      type="text"
+                      value={filterDropdownSearch}
+                      onChange={(e) => setFilterDropdownSearch(e.target.value)}
+                      placeholder="Buscar..."
+                      className="dropdown-search-input"
+                    />
+                    <span className="dropdown-search-icon">🔍</span>
+                  </div>
+                </div>
+
+                <div className="lista-desplegable">
+                  {departamentosFiltrados.map((dept) => (
+                    <label key={dept} className="fila-opcion">
+                      <div className="fila-contenido">
+                        <input
+                          type="checkbox"
+                          checked={selectedDepartamentos.includes(dept)}
+                          onChange={() => handleToggleDepartamento(dept)}
+                        />
+                        <span>{dept}</span>
+                      </div>
+                    </label>
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
+
+        {loading ? (
+          <div className="cargando">
+            Cargando cursos...
+          </div>) : cursosFiltrados.length === 0 ? (
+            <div className="sin-cursos">
+              No hay cursos disponibles. Ajustá la búsqueda o los filtros.
+            </div>) : (
+          <table className="tabla">
+            <thead>
+              <tr>
+                <th onClick={(e) => handleSort(e, 'idCursoSiga')} style={{ cursor: 'pointer' }}>
+                  ID SIGA {sortConfig.key === 'idCursoSiga' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                </th>
+                <th onClick={(e) => handleSort(e, 'nombreCurso')} style={{ cursor: 'pointer' }}>
+                  Nombre del Curso {sortConfig.key === 'nombreCurso' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                </th>
+                <th onClick={(e) => handleSort(e, 'departamento')} style={{ cursor: 'pointer' }}>
+                  Departamento {sortConfig.key === 'departamento' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                </th>
+                <th onClick={(e) => handleSort(e, 'creditos')} style={{ cursor: 'pointer' }}>
+                  Créditos {sortConfig.key === 'creditos' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                </th>
+                <th>Modalidad</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              {cursosFiltrados.map((curso) => (
+                <tr key={curso?.idCursoSiga ?? Math.random()}>
+                  <td>{curso?.idCursoSiga ?? 'N/A'}</td>
+                  <td>{curso?.nombreCurso ?? 'Sin nombre'}</td>
+                  <td>{curso?.departamento?.nombre ?? 'N/A'}</td>
+                  <td>{curso?.creditos ?? 'N/A'}</td>
+                  <td>{curso?.modalidad ?? 'N/A'}</td>
+                  <td>
+                    <button type="button" onClick={(e) => handleViewDetails(e, curso)}>
+                      Ver Descripción
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+
+        {selectedCurso && (
+          <div className="modal-overlay" onClick={() => setSelectedCurso(null)}>
+            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+              <h2>{selectedCurso?.nombreCurso ?? 'Curso seleccionado'}</h2>
+              <p>{selectedCurso?.descripcion ?? 'No hay descripción disponible.'}</p>
+              <div className="detalles-tecnicos">
+                <h3>Detalles Técnicos</h3>
+                <p>Nivel de Formación: {selectedCurso?.nivelFormacion ?? 'N/A'}</p>
+                <p>Idioma: {selectedCurso?.idioma ?? 'N/A'}</p>
+                <p>Total de Horas: {selectedCurso?.totalHoras ?? 'N/A'}</p>
+              </div>
+              <button onClick={() => setSelectedCurso(null)}>Cerrar</button>
+            </div>
+          </div>
+        )}
       </div>
-    </ErrorBoundary>
+    </div>
   );
 }
 
