@@ -15,6 +15,7 @@ function App() {
   const [vista, setVista] = useState('inicio');
   const [selectedCurso, setSelectedCurso] = useState(null);
   const [historialErrores, setHistorialErrores] = useState([]);
+  const [cursosSeleccionados, setCursosSeleccionados] = useState([]);
 
   // Estados para filtros y búsqueda
   const [searchTerm, setSearchTerm] = useState('');
@@ -133,6 +134,16 @@ function App() {
       prev.includes(departamento)
         ? prev.filter((item) => item !== departamento)
         : [...prev, departamento]
+    );
+  };
+
+  const toggleCursoSeleccionado = (idCurso) => {
+    const id = String(idCurso);
+
+    setCursosSeleccionados((prev) =>
+      prev.includes(id)
+        ? prev.filter((item) => item !== id)
+        : [...prev, id]
     );
   };
 
@@ -476,6 +487,7 @@ function App() {
           <table className="tabla">
             <thead>
               <tr>
+                <th></th>
                 <th onClick={(e) => handleSort(e, 'idCursoSiga')} style={{ cursor: 'pointer' }}>
                   ID SIGA {sortConfig.key === 'idCursoSiga' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
                 </th>
@@ -495,6 +507,19 @@ function App() {
             <tbody>
               {cursosFiltrados.map((curso) => (
                 <tr key={curso?.idCursoSiga ?? Math.random()}>
+                  <td>
+                    <input
+                      type="checkbox"
+                      checked={cursosSeleccionados.includes(
+                        String(curso?.idCursoSiga)
+                      )}
+                      onChange={() =>
+                        toggleCursoSeleccionado(
+                          String(curso?.idCursoSiga)
+                        )
+                      }
+                    />
+                  </td>
                   <td>{curso?.idCursoSiga ?? 'N/A'}</td>
                   <td>{curso?.nombreCurso ?? 'Sin nombre'}</td>
                   <td>{curso?.departamento?.nombre ?? 'N/A'}</td>
