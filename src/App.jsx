@@ -54,17 +54,15 @@ function App() {
 
   // Función para filtrar cursos
   const filtrarCursos = () => {
-    let filtered = fullCursos;
+    let filtered = Array.isArray(fullCursos) ? fullCursos : [];
 
-    // Filtro por búsqueda (nombre o ID)
     if (searchTerm) {
       filtered = filtered.filter(curso =>
-        curso?.nombreCurso?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        curso?.idCursoSiga?.toString().includes(searchTerm)
+        (curso?.nombreCurso || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        String(curso?.idCursoSiga || '').includes(searchTerm)
       );
     }
 
-    // Filtro por departamentos seleccionados
     if (selectedDepartamentos.length > 0) {
       filtered = filtered.filter(curso =>
         selectedDepartamentos.includes(curso?.departamento?.nombre)
@@ -76,31 +74,47 @@ function App() {
 
   // Función para ordenar cursos
   const ordenarCursos = (cursos) => {
-    if (!sortConfig.key) return cursos;
+    if (!Array.isArray(cursos) || !sortConfig.key) return cursos;
 
     try {
       return [...cursos].sort((a, b) => {
-        const campo = sortConfig.key;
-        let valorA, valorB;
+        const key = sortConfig.key;
 
-        // Obtener valores seguros
-        if (campo === 'departamento') {
-          valorA = a?.departamento?.nombre || '';
-          valorB = b?.departamento?.nombre || '';
+        let valorA;
+        let valorB;
+
+        if (key === 'departamento') {
+          valorA = a?.departamento?.nombre ?? '';
+          valorB = b?.departamento?.nombre ?? '';
         } else {
-          valorA = a?.[campo] || '';
-          valorB = b?.[campo] || '';
+          valorA = a?.[key] ?? '';
+          valorB = b?.[key] ?? '';
         }
 
-        // Convertir a string y comparar
-        const stringA = valorA.toString().trim();
-        const stringB = valorB.toString().trim();
-        const comparison = stringA.localeCompare(stringB, undefined, { numeric: true, sensitivity: 'base' });
+        // 🔥 FORZAR NÚMEROS SI APLICA
+        const numA = Number(valorA);
+        const numB = Number(valorB);
+
+        if (!isNaN(numA) && !isNaN(numB)) {
+          return sortConfig.direction === 'asc'
+            ? numA - numB
+            : numB - numA;
+        }
+
+        // 🔥 STRING SEGURO
+        const stringA = String(valorA).toLowerCase().trim();
+        const stringB = String(valorB).toLowerCase().trim();
+
+        const comparison = stringA.localeCompare(stringB, undefined, {
+          numeric: true,
+          sensitivity: 'base'
+        });
 
         return sortConfig.direction === 'asc' ? comparison : -comparison;
       });
+
     } catch (error) {
-      console.error('Error en ordenarCursos:', error, { sortKey: sortConfig.key });
+      console.error('Error en ordenarCursos:', error);
       return cursos;
     }
   };
@@ -111,14 +125,18 @@ function App() {
       event?.preventDefault?.();
       event?.stopPropagation?.();
 
+      if (!key) return;
+
       let direction = 'asc';
+
       if (sortConfig.key === key && sortConfig.direction === 'asc') {
         direction = 'desc';
       }
+
       setSortConfig({ key, direction });
+
     } catch (error) {
-      console.error('Error al ordenar:', error);
-      // No lanzamos el error, solo lo registramos. La tabla permanece igual.
+      console.error('Error en handleSort:', error);
     }
   };
 
@@ -151,11 +169,11 @@ function App() {
     setFilterDropdownSearch('');
   };
 
-  const cursosFiltrados = ordenarCursos(filtrarCursos());
-
+  const cursosFiltrados = ordenarCursos(filtrarCursos() || []);
   // Obtener departamentos únicos
-  const departamentosUnicos = [...new Set(fullCursos.map(curso => curso?.departamento?.nombre).filter(Boolean))].sort();
-
+const departamentosUnicos = Array.isArray(fullCursos)
+  ? [...new Set(fullCursos.map(curso => curso?.departamento?.nombre).filter(Boolean))].sort()
+  : [];
   const departamentosFiltrados = departamentosUnicos.filter((departamento) =>
     departamento.toLowerCase().includes(filterDropdownSearch.toLowerCase())
   );
@@ -439,13 +457,7 @@ function App() {
                 </div>
 
                 <div className="dropdown-search-row">
-                  <button
-                    type="button"
-                    className="dropdown-clear-link"
-                    onClick={clearDropdownSearch}
-                  >
-                    Borrar
-                  </button>
+
                   <div className="dropdown-search-wrapper">
                     <input
                       type="text"
