@@ -20,9 +20,20 @@ function App() {
   // Estados para filtros y búsqueda
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedDepartamentos, setSelectedDepartamentos] = useState([]);
+  const [selectedModalities, setSelectedModalities] = useState([]);
+  const [selectedCredits, setSelectedCredits] = useState([]);
   const [filterDropdownSearch, setFilterDropdownSearch] = useState('');
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
   const [showFilters, setShowFilters] = useState(false);
+
+  // Estados para controlar la apertura de los filtros acordeón
+  const [isDepartamentosOpen, setIsDepartamentosOpen] = useState(true);
+  const [isModalidadesOpen, setIsModalidadesOpen] = useState(false);
+  const [isCreditosOpen, setIsCreditosOpen] = useState(false);
+
+  // Opciones fijas para filtros
+  const modalidades = ['Presencial', 'Virtual', 'Híbrida'];
+  const creditos = [1, 2, 3, 4, 5, 6];
 
   useEffect(() => {
     if (vista === 'empaquetador') {
@@ -66,6 +77,18 @@ function App() {
     if (selectedDepartamentos.length > 0) {
       filtered = filtered.filter(curso =>
         selectedDepartamentos.includes(curso?.departamento?.nombre)
+      );
+    }
+
+    if (selectedModalities.length > 0) {
+      filtered = filtered.filter(curso =>
+        selectedModalities.includes(curso?.modalidad)
+      );
+    }
+
+    if (selectedCredits.length > 0) {
+      filtered = filtered.filter(curso =>
+        selectedCredits.includes(curso?.creditos)
       );
     }
 
@@ -171,6 +194,22 @@ function App() {
     );
   };
 
+  const handleToggleModalidad = (modalidad) => {
+    setSelectedModalities((prev) =>
+      prev.includes(modalidad)
+        ? prev.filter((item) => item !== modalidad)
+        : [...prev, modalidad]
+    );
+  };
+
+  const handleToggleCredito = (credito) => {
+    setSelectedCredits((prev) =>
+      prev.includes(credito)
+        ? prev.filter((item) => item !== credito)
+        : [...prev, credito]
+    );
+  };
+
   const toggleCursoSeleccionado = (idCurso) => {
     const id = String(idCurso);
 
@@ -195,7 +234,7 @@ function App() {
   );
 
   // Contar filtros activos en el dropdown
-  const filtrosActivos = selectedDepartamentos.length;
+  const filtrosActivos = selectedDepartamentos.length + selectedModalities.length + selectedCredits.length;
 
   const registrarError = (idCurso, error, operacion) => {
     const ahora = new Date();
@@ -265,6 +304,8 @@ function App() {
   const limpiarBusqueda = () => {
     setSearchTerm('');
     setSelectedDepartamentos([]);
+    setSelectedModalities([]);
+    setSelectedCredits([]);
     setFilterDropdownSearch('');
     setSortConfig({ key: null, direction: 'asc' });
     setShowFilters(false);
@@ -469,36 +510,124 @@ function App() {
                   >
                     ←
                   </button>
-                  <div className="dropdown-title">Programa / Departamento Académi...</div>
+                  <div className="dropdown-title">Filtros</div>
                 </div>
 
-                <div className="dropdown-search-row">
-
-                  <div className="dropdown-search-wrapper">
-                    <input
-                      type="text"
-                      value={filterDropdownSearch}
-                      onChange={(e) => setFilterDropdownSearch(e.target.value)}
-                      placeholder="Buscar..."
-                      className="dropdown-search-input"
-                    />
-                    <span className="dropdown-search-icon">🔍</span>
+                {/* Filtro de Programa / Departamento Académico */}
+                <div className="filtro-seccion">
+                  <div className="filtro-header" onClick={() => setIsDepartamentosOpen(!isDepartamentosOpen)}>
+                    <span className="filtro-titulo">Programa / Departamento Académico</span>
+                    <div className="filtro-header-right">
+                      {selectedDepartamentos.length > 0 && (
+                        <button
+                          type="button"
+                          className="borrar-filtro"
+                          onClick={(e) => { e.stopPropagation(); setSelectedDepartamentos([]); }}
+                        >
+                          Borrar
+                        </button>
+                      )}
+                      <span className={`filtro-icon ${isDepartamentosOpen ? 'open' : ''}`}>∨</span>
+                    </div>
+                  </div>
+                  <div className={`filtro-content ${isDepartamentosOpen ? 'open' : ''}`}>
+                    <div className="dropdown-search-row">
+                      <div className="dropdown-search-wrapper">
+                        <input
+                          type="text"
+                          value={filterDropdownSearch}
+                          onChange={(e) => setFilterDropdownSearch(e.target.value)}
+                          placeholder="Buscar..."
+                          className="dropdown-search-input"
+                        />
+                        <span className="dropdown-search-icon">🔍</span>
+                      </div>
+                    </div>
+                    <div className="lista-desplegable">
+                      {departamentosFiltrados.map((dept) => (
+                        <label key={dept} className="fila-opcion">
+                          <div className="fila-contenido">
+                            <input
+                              type="checkbox"
+                              checked={selectedDepartamentos.includes(dept)}
+                              onChange={() => handleToggleDepartamento(dept)}
+                            />
+                            <span>{dept}</span>
+                          </div>
+                        </label>
+                      ))}
+                    </div>
                   </div>
                 </div>
 
-                <div className="lista-desplegable">
-                  {departamentosFiltrados.map((dept) => (
-                    <label key={dept} className="fila-opcion">
-                      <div className="fila-contenido">
-                        <input
-                          type="checkbox"
-                          checked={selectedDepartamentos.includes(dept)}
-                          onChange={() => handleToggleDepartamento(dept)}
-                        />
-                        <span>{dept}</span>
-                      </div>
-                    </label>
-                  ))}
+                {/* Filtro de Modalidad */}
+                <div className="filtro-seccion">
+                  <div className="filtro-header" onClick={() => setIsModalidadesOpen(!isModalidadesOpen)}>
+                    <span className="filtro-titulo">Modalidad</span>
+                    <div className="filtro-header-right">
+                      {selectedModalities.length > 0 && (
+                        <button
+                          type="button"
+                          className="borrar-filtro"
+                          onClick={(e) => { e.stopPropagation(); setSelectedModalities([]); }}
+                        >
+                          Borrar
+                        </button>
+                      )}
+                      <span className={`filtro-icon ${isModalidadesOpen ? 'open' : ''}`}>∨</span>
+                    </div>
+                  </div>
+                  <div className={`filtro-content ${isModalidadesOpen ? 'open' : ''}`}>
+                    <div className="lista-desplegable">
+                      {modalidades.map((mod) => (
+                        <label key={mod} className="fila-opcion">
+                          <div className="fila-contenido">
+                            <input
+                              type="checkbox"
+                              checked={selectedModalities.includes(mod)}
+                              onChange={() => handleToggleModalidad(mod)}
+                            />
+                            <span>{mod}</span>
+                          </div>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Filtro de Créditos */}
+                <div className="filtro-seccion">
+                  <div className="filtro-header" onClick={() => setIsCreditosOpen(!isCreditosOpen)}>
+                    <span className="filtro-titulo">Créditos</span>
+                    <div className="filtro-header-right">
+                      {selectedCredits.length > 0 && (
+                        <button
+                          type="button"
+                          className="borrar-filtro"
+                          onClick={(e) => { e.stopPropagation(); setSelectedCredits([]); }}
+                        >
+                          Borrar
+                        </button>
+                      )}
+                      <span className={`filtro-icon ${isCreditosOpen ? 'open' : ''}`}>∨</span>
+                    </div>
+                  </div>
+                  <div className={`filtro-content ${isCreditosOpen ? 'open' : ''}`}>
+                    <div className="lista-desplegable">
+                      {creditos.map((cred) => (
+                        <label key={cred} className="fila-opcion">
+                          <div className="fila-contenido">
+                            <input
+                              type="checkbox"
+                              checked={selectedCredits.includes(cred)}
+                              onChange={() => handleToggleCredito(cred)}
+                            />
+                            <span>{cred}</span>
+                          </div>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               </div>
             )}
