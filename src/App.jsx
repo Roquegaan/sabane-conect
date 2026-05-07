@@ -72,40 +72,43 @@ function App() {
     return filtered;
   };
 
-  // Función para ordenar cursos
+  // Función para ordenar cursos - COMPLETAMENTE NULL-SAFE
   const ordenarCursos = (cursos) => {
-    if (!Array.isArray(cursos) || !sortConfig.key) return cursos;
+    if (!Array.isArray(cursos) || !sortConfig.key) {
+      return cursos;
+    }
 
     try {
-      return [...cursos].sort((a, b) => {
-        const key = sortConfig.key;
+      // INMUTABILIDAD: Crear copia del array ANTES de ordenar
+      const datosOrdenados = [...cursos].sort((a, b) => {
+        const columna = sortConfig.key;
 
+        // Obtener valores con null-safety
         let valorA;
         let valorB;
 
-        if (key === 'departamento') {
-          valorA = a?.departamento?.nombre ?? '';
-          valorB = b?.departamento?.nombre ?? '';
+        if (columna === 'departamento') {
+          valorA = a?.departamento?.nombre;
+          valorB = b?.departamento?.nombre;
         } else {
-          valorA = a?.[key] ?? '';
-          valorB = b?.[key] ?? '';
+          valorA = a?.[columna];
+          valorB = b?.[columna];
         }
 
-        // FORZAR NÚMEROS SI APLICA
-        const numA = Number(valorA);
-        const numB = Number(valorB);
+        // COMPARACIÓN SEGURA: Convertir a string siempre
+        const valA = (valorA || '').toString().toLowerCase().trim();
+        const valB = (valorB || '').toString().toLowerCase().trim();
 
-        if (!isNaN(numA) && !isNaN(numB)) {
-          return sortConfig.direction === 'asc'
-            ? numA - numB
-            : numB - numA;
+        // Intentar comparación numérica si ambos son números válidos
+        const numA = Number(valA);
+        const numB = Number(valB);
+
+        if (!isNaN(numA) && !isNaN(numB) && valA !== '' && valB !== '') {
+          return sortConfig.direction === 'asc' ? numA - numB : numB - numA;
         }
 
-        //  STRING SEGURO
-        const stringA = String(valorA).toLowerCase().trim();
-        const stringB = String(valorB).toLowerCase().trim();
-
-        const comparison = stringA.localeCompare(stringB, undefined, {
+        // Fallback a comparación de strings
+        const comparison = valA.localeCompare(valB, 'es-ES', {
           numeric: true,
           sensitivity: 'base'
         });
@@ -113,30 +116,38 @@ function App() {
         return sortConfig.direction === 'asc' ? comparison : -comparison;
       });
 
+      return datosOrdenados;
     } catch (error) {
       console.error('Error en ordenarCursos:', error);
+      // En caso de error, retornar array sin modificar
       return cursos;
     }
   };
 
-  // Función para manejar clic en encabezado de tabla (con captura de error silenciosa)
+  // Función para manejar clic en encabezado de tabla - PREVENCIÓN DE EVENTOS GARANTIZADA
   const handleSort = (event, key) => {
+    if (!event) {
+      return;
+    }
+
     try {
-      event?.preventDefault?.();
-      event?.stopPropagation?.();
+      // PREVENCIÓN DE EVENTOS: Garantizada
+      event.preventDefault();
+      event.stopPropagation();
 
-      if (!key) return;
-
-      let direction = 'asc';
-
-      if (sortConfig.key === key && sortConfig.direction === 'asc') {
-        direction = 'desc';
+      if (!key || typeof key !== 'string') {
+        return;
       }
 
-      setSortConfig({ key, direction });
+      // Determinar dirección: cambiar a 'desc' si ya está ordenado por esta columna en 'asc'
+      const newDirection = (sortConfig.key === key && sortConfig.direction === 'asc') ? 'desc' : 'asc';
+
+      // Actualizar estado sin mutación
+      setSortConfig({ key, direction: newDirection });
 
     } catch (error) {
       console.error('Error en handleSort:', error);
+      // No propagar el error, permitir que la tabla continúe funcionando
     }
   };
 
@@ -505,16 +516,40 @@ function App() {
             <thead>
               <tr>
                 <th></th>
-                <th onClick={(e) => handleSort(e, 'idCursoSiga')} style={{ cursor: 'pointer' }}>
+                <th
+                  onClick={(e) => handleSort(e, 'idCursoSiga')}
+                  style={{ cursor: 'pointer' }}
+                  role="button"
+                  tabIndex="0"
+                  onKeyDown={(e) => e.key === 'Enter' && handleSort(e, 'idCursoSiga')}
+                >
                   ID SIGA {sortConfig.key === 'idCursoSiga' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
                 </th>
-                <th onClick={(e) => handleSort(e, 'nombreCurso')} style={{ cursor: 'pointer' }}>
+                <th
+                  onClick={(e) => handleSort(e, 'nombreCurso')}
+                  style={{ cursor: 'pointer' }}
+                  role="button"
+                  tabIndex="0"
+                  onKeyDown={(e) => e.key === 'Enter' && handleSort(e, 'nombreCurso')}
+                >
                   Nombre del Curso {sortConfig.key === 'nombreCurso' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
                 </th>
-                <th onClick={(e) => handleSort(e, 'departamento')} style={{ cursor: 'pointer' }}>
+                <th
+                  onClick={(e) => handleSort(e, 'departamento')}
+                  style={{ cursor: 'pointer' }}
+                  role="button"
+                  tabIndex="0"
+                  onKeyDown={(e) => e.key === 'Enter' && handleSort(e, 'departamento')}
+                >
                   Departamento {sortConfig.key === 'departamento' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
                 </th>
-                <th onClick={(e) => handleSort(e, 'creditos')} style={{ cursor: 'pointer' }}>
+                <th
+                  onClick={(e) => handleSort(e, 'creditos')}
+                  style={{ cursor: 'pointer' }}
+                  role="button"
+                  tabIndex="0"
+                  onKeyDown={(e) => e.key === 'Enter' && handleSort(e, 'creditos')}
+                >
                   Créditos {sortConfig.key === 'creditos' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
                 </th>
                 <th>Modalidad</th>
