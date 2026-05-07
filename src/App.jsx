@@ -91,7 +91,7 @@ function App() {
           valorB = b?.[key] ?? '';
         }
 
-        // 🔥 FORZAR NÚMEROS SI APLICA
+        // FORZAR NÚMEROS SI APLICA
         const numA = Number(valorA);
         const numB = Number(valorB);
 
@@ -101,7 +101,7 @@ function App() {
             : numB - numA;
         }
 
-        // 🔥 STRING SEGURO
+        //  STRING SEGURO
         const stringA = String(valorA).toLowerCase().trim();
         const stringB = String(valorB).toLowerCase().trim();
 
@@ -147,6 +147,11 @@ function App() {
     setSelectedCurso(curso);
   };
 
+  const handleRowClick = (curso) => {
+    if (!curso) return;
+    setSelectedCurso(curso);
+  };
+
   const handleToggleDepartamento = (departamento) => {
     setSelectedDepartamentos((prev) =>
       prev.includes(departamento)
@@ -171,9 +176,9 @@ function App() {
 
   const cursosFiltrados = ordenarCursos(filtrarCursos() || []);
   // Obtener departamentos únicos
-const departamentosUnicos = Array.isArray(fullCursos)
-  ? [...new Set(fullCursos.map(curso => curso?.departamento?.nombre).filter(Boolean))].sort()
-  : [];
+  const departamentosUnicos = Array.isArray(fullCursos)
+    ? [...new Set(fullCursos.map(curso => curso?.departamento?.nombre).filter(Boolean))].sort()
+    : [];
   const departamentosFiltrados = departamentosUnicos.filter((departamento) =>
     departamento.toLowerCase().includes(filterDropdownSearch.toLowerCase())
   );
@@ -518,13 +523,16 @@ const departamentosUnicos = Array.isArray(fullCursos)
             </thead>
             <tbody>
               {cursosFiltrados.map((curso) => (
-                <tr key={curso?.idCursoSiga ?? Math.random()}>
+                <tr
+                  key={curso?.idCursoSiga ?? Math.random()}
+                >
                   <td>
                     <input
                       type="checkbox"
                       checked={cursosSeleccionados.includes(
                         String(curso?.idCursoSiga)
                       )}
+                      onClick={(e) => e.stopPropagation()}
                       onChange={() =>
                         toggleCursoSeleccionado(
                           String(curso?.idCursoSiga)
@@ -538,7 +546,13 @@ const departamentosUnicos = Array.isArray(fullCursos)
                   <td>{curso?.creditos ?? 'N/A'}</td>
                   <td>{curso?.modalidad ?? 'N/A'}</td>
                   <td>
-                    <button type="button" onClick={(e) => handleViewDetails(e, curso)}>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleViewDetails(e, curso);
+                      }}
+                    >
                       Ver Descripción
                     </button>
                   </td>

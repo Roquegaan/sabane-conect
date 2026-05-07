@@ -391,6 +391,17 @@
             font-weight: 700;
             font-size: 12px;
             letter-spacing: 0.5px;
+            outline: none;
+
+            &:focus {
+                outline: none !important;
+                box-shadow: none !important;
+            }
+
+            &:active {
+                outline: none !important;
+                box-shadow: none !important;
+            }
 
             &:nth-child(4),
             &:nth-child(5) {
