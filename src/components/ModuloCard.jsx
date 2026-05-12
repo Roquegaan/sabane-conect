@@ -43,4 +43,4 @@ function ModuloCard({ icono, titulo, descripcion, textoBoton, onclick, disabled,
     );
 }
 
-export default ModuloCard;
+export default ModuloCard; a
