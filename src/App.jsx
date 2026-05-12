@@ -3,7 +3,7 @@ import './App.css';
 import Navbar from './components/Navbar';
 import ModuloCard from './components/ModuloCard';
 import RegistroErrores from './components/RegistroErrores';
-import { getAccessToken, fetchCursosInList } from './services/apiCursos';
+import { getAccessToken, fetchCursosInRange } from './services/apiCursos';
 import './styles/Inicio.scss';
 import './styles/Empaquetador.scss';
 import './styles/Modal.scss';
@@ -41,19 +41,17 @@ function App() {
     }
   }, [vista]);
 
+  useEffect(() => {
+    cargarCursos();
+  }, []);
+
   const cargarCursos = async () => {
     try {
       setLoading(true);
       const token = await getAccessToken();
-
-      // IDs que SI están en tu archivo response.json
-      const ids = ["675851", "675852", "675908"];
-      // fetchCursosInList devuelve directamente un ARRAY (ya convierte con Object.values)
-      const listaArray = await fetchCursosInList(token, ids);
-
-      // No necesitamos verificar .data porque ya es un array
-      setCursos(listaArray);
-      setFullCursos(listaArray);
+      const cursosEnRango = await fetchCursosInRange(token, '01-01-2026', '12-05-2026');
+      setCursos(cursosEnRango);
+      setFullCursos(cursosEnRango);
     } catch (error) {
       console.error('Error cargando cursos:', error);
       registrarError(null, error, 'cargarCursos');
@@ -170,7 +168,7 @@ function App() {
 
     } catch (error) {
       console.error('Error en handleSort:', error);
-      // No propagar el error, permitir que la tabla continúe funcionando
+      // No propagar el error, permitir que la tabla continúe funcionando 
     }
   };
 
@@ -281,24 +279,14 @@ function App() {
   };
 
   const buscarCursoPorId = async (idIngresado) => {
-    if (!/^[0-9]+$/.test(idIngresado)) {
+    const valor = String(idIngresado || '').trim();
+
+    if (!/^[0-9]+$/.test(valor)) {
       alert('Por favor, ingresa un ID SIGA válido para buscar');
       return;
     }
 
-    try {
-      setLoading(true);
-      const token = await getAccessToken();
-      const resultado = await fetchCursosInList(token, [idIngresado]);
-      setCursos(resultado);
-      setFullCursos(resultado); // Actualizar fullCursos también
-    } catch (error) {
-      console.error('Error buscando curso por ID:', error);
-      registrarError(idIngresado, error, 'buscar');
-      alert('Error de conexión');
-    } finally {
-      setLoading(false);
-    }
+    setSearchTerm(valor);
   };
 
   const limpiarBusqueda = () => {
