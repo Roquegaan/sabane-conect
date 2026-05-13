@@ -116,9 +116,9 @@ function App() {
           valorB = b?.[columna];
         }
 
-        // COMPARACIÓN SEGURA: Convertir a string siempre
-        const valA = (valorA || '').toString().toLowerCase().trim();
-        const valB = (valorB || '').toString().toLowerCase().trim();
+        // COMPARACIÓN SEGURA: Convertir a string siempre y evitar null/undefined
+        const valA = (valorA || '').toString().trim();
+        const valB = (valorB || '').toString().trim();
 
         // Intentar comparación numérica si ambos son números válidos
         const numA = Number(valA);
@@ -128,7 +128,7 @@ function App() {
           return sortConfig.direction === 'asc' ? numA - numB : numB - numA;
         }
 
-        // Fallback a comparación de strings
+        // Fallback a comparación de strings con localización garantizada
         const comparison = valA.localeCompare(valB, 'es-ES', {
           numeric: true,
           sensitivity: 'base'
@@ -632,49 +632,77 @@ function App() {
           <table className="tabla">
             <thead>
               <tr>
-                <th></th>
+                <th translate="no"></th>
                 <th
+                  translate="no"
                   onClick={(e) => handleSort(e, 'idCursoSiga')}
                   style={{ cursor: 'pointer' }}
                   role="button"
                   tabIndex="0"
-                  onKeyDown={(e) => e.key === 'Enter' && handleSort(e, 'idCursoSiga')}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      handleSort(e, 'idCursoSiga');
+                    }
+                  }}
                 >
                   ID SIGA {sortConfig.key === 'idCursoSiga' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
                 </th>
                 <th
+                  translate="no"
                   onClick={(e) => handleSort(e, 'nombreCurso')}
                   style={{ cursor: 'pointer' }}
                   role="button"
                   tabIndex="0"
-                  onKeyDown={(e) => e.key === 'Enter' && handleSort(e, 'nombreCurso')}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      handleSort(e, 'nombreCurso');
+                    }
+                  }}
                 >
                   Nombre del Curso {sortConfig.key === 'nombreCurso' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
                 </th>
                 <th
+                  translate="no"
                   onClick={(e) => handleSort(e, 'departamento')}
                   style={{ cursor: 'pointer' }}
                   role="button"
                   tabIndex="0"
-                  onKeyDown={(e) => e.key === 'Enter' && handleSort(e, 'departamento')}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      handleSort(e, 'departamento');
+                    }
+                  }}
                 >
                   Departamento {sortConfig.key === 'departamento' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
                 </th>
                 <th
+                  translate="no"
                   onClick={(e) => handleSort(e, 'creditos')}
                   style={{ cursor: 'pointer' }}
                   role="button"
                   tabIndex="0"
-                  onKeyDown={(e) => e.key === 'Enter' && handleSort(e, 'creditos')}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      handleSort(e, 'creditos');
+                    }
+                  }}
                 >
                   Créditos {sortConfig.key === 'creditos' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
                 </th>
-                <th>Modalidad</th>
-                <th>Acciones</th>
+                <th translate="no">Modalidad</th>
+                <th translate="no">Acciones</th>
               </tr>
             </thead>
             <tbody>
-              {cursosFiltrados.map((curso) => (
+              {cursosFiltrados && cursosFiltrados.length > 0 ? cursosFiltrados.map((curso) => (
                 <tr
                   key={curso?.idCursoSiga ?? Math.random()}
                 >
@@ -709,7 +737,7 @@ function App() {
                     </button>
                   </td>
                 </tr>
-              ))}
+              )) : null}
             </tbody>
           </table>
         )}
